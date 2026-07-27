@@ -53,9 +53,9 @@ export default function AboutPage() {
                 </Parallax>
                 <figure className="relative overflow-hidden rounded-3xl bg-navy-950 shadow-subtle">
                   <Image
-                    src="/img/classroom.webp"
+                    src="/img/classroom-portrait.webp"
                     alt="A training session in progress at SSS Academy"
-                    width={1600}
+                    width={640}
                     height={800}
                     sizes="(max-width: 1024px) 90vw, 540px"
                     className="aspect-[4/5] w-full object-cover"
@@ -94,22 +94,25 @@ export default function AboutPage() {
             <div className="lg:col-span-6">
               <ol className="divide-y divide-ink-200 border-y border-ink-200">
                 {story.paragraphs.map((paragraph, i) => (
-                  <Reveal key={i} delay={i * 80}>
-                    <li className="grid gap-4 py-7 sm:grid-cols-[3rem_1fr] sm:gap-6 sm:py-8">
-                      <span
-                        aria-hidden="true"
-                        className="flex h-10 w-10 items-center justify-center rounded-full bg-navy-50 text-sm font-semibold text-navy-700"
-                      >
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <p
-                        className={`text-sm leading-relaxed sm:text-[0.95rem] ${
-                          i === 0 ? "text-navy-950" : "text-ink-600"
-                        }`}
-                      >
-                        {paragraph}
-                      </p>
-                    </li>
+                  <Reveal
+                    as="li"
+                    key={i}
+                    delay={i * 80}
+                    className="grid gap-4 py-7 sm:grid-cols-[3rem_1fr] sm:gap-6 sm:py-8"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-navy-50 text-sm font-semibold text-navy-700"
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <p
+                      className={`text-sm leading-relaxed sm:text-[0.95rem] ${
+                        i === 0 ? "text-navy-950" : "text-ink-600"
+                      }`}
+                    >
+                      {paragraph}
+                    </p>
                   </Reveal>
                 ))}
               </ol>

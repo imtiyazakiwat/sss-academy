@@ -5,6 +5,7 @@ import { Reveal } from "@/components/motion/Reveal";
 import { EnquiryForm } from "@/components/site/EnquiryForm";
 import { PageHero } from "@/components/site/PageHero";
 import { Container, Eyebrow, Section } from "@/components/ui/Section";
+import { getCourse } from "@/content/courses";
 import { contact, socials } from "@/content/site";
 import { breadcrumbSchema } from "@/lib/schema";
 
@@ -65,6 +66,7 @@ export default async function ContactPage({
   searchParams: Promise<{ course?: string }>;
 }) {
   const { course } = await searchParams;
+  const defaultCourse = course && getCourse(course) ? course : undefined;
 
   return (
     <>
@@ -87,7 +89,10 @@ export default async function ContactPage({
             <Reveal className="lg:col-span-7">
               <div className="border-t-4 border-navy-900 bg-[#fffdf8] p-6 shadow-[10px_10px_0_0_#e3ede5] sm:p-8">
                 <div className="mt-4">
-                  <EnquiryForm key={course ?? ""} defaultCourse={course} />
+                  <EnquiryForm
+                    key={defaultCourse ?? ""}
+                    defaultCourse={defaultCourse}
+                  />
                 </div>
               </div>
             </Reveal>

@@ -33,12 +33,6 @@ export function EnquiryForm({
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (defaultCourse) {
-      setValues((current) => ({ ...current, course: defaultCourse }));
-    }
-  }, [defaultCourse]);
-
-  useEffect(() => {
     if (status === "success") successRef.current?.focus();
     if (status === "error" && formError) errorRef.current?.focus();
   }, [formError, status]);
@@ -229,7 +223,7 @@ export function EnquiryForm({
                 set("phone")(digits.slice(0, 10));
               }}
               aria-invalid={Boolean(errors.phone)}
-              aria-describedby={describedBy("phone", true)}
+              aria-describedby={describedBy("phone")}
               className={cn(inputClass(Boolean(errors.phone)), "pl-[4.25rem]")}
               placeholder="98765 43210"
             />
