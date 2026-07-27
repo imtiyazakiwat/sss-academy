@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
 import { JsonLd } from "@/components/JsonLd";
-import { CtaBand } from "@/components/site/CtaBand";
 import { PlacementStories } from "@/components/site/PlacementStories";
 import { PlacementsHero } from "@/components/site/PlacementsHero";
 import { Container, Section } from "@/components/ui/Section";
@@ -46,13 +45,6 @@ export default function PlacementsPage() {
           <PlacementStories stories={placements} />
         </Container>
       </Section>
-
-      <CtaBand
-        eyebrow="Your next step"
-        title="Let's find the right place to begin"
-        body="Tell us what you already know and the kind of work you want to move toward. We'll suggest a practical learning path without pressure."
-        primaryLabel="Talk to a counsellor"
-      />
 
       <JsonLd
         data={breadcrumbSchema([{ name: "Placements", href: "/placements" }])}

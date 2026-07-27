@@ -166,14 +166,7 @@ export function EnquiryForm({
       aria-busy={busy}
       className={cn("flex flex-col", className)}
     >
-      <div className="mb-7 flex flex-wrap items-center justify-between gap-2 border-b border-ink-200 pb-4">
-        <p className="text-sm font-medium text-navy-900">
-          A few details, then we&apos;ll take it from here.
-        </p>
-        <p className="text-[0.6875rem] text-ink-500">
-          <span className="font-semibold text-ember-700">*</span> Required
-        </p>
-      </div>
+
 
       {formError ? (
         <div
@@ -208,7 +201,6 @@ export function EnquiryForm({
           id={`${uid}-phone`}
           label="Mobile number"
           error={errors.phone}
-          hint="Indian mobile number"
         >
           <div className="relative">
             <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center border-r border-ink-200 px-3.5 text-sm font-medium text-ink-500">
@@ -231,7 +223,7 @@ export function EnquiryForm({
                 set("phone")(digits.slice(0, 10));
               }}
               aria-invalid={Boolean(errors.phone)}
-              aria-describedby={describedBy("phone", true)}
+              aria-describedby={describedBy("phone")}
               className={cn(inputClass(Boolean(errors.phone)), "pl-[4.25rem]")}
               placeholder="98765 43210"
             />
@@ -259,7 +251,6 @@ export function EnquiryForm({
           id={`${uid}-course`}
           label="Course of interest"
           error={errors.course}
-          optional
         >
           <div className="relative">
             <select
@@ -325,10 +316,7 @@ export function EnquiryForm({
         />
       </div>
 
-      <div className="mt-7 flex flex-col gap-4 border-t border-ink-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
-        <p className="max-w-xs text-xs leading-5 text-ink-500">
-          No spam or sales pressure. Your details are used only to answer this enquiry.
-        </p>
+      <div className="mt-7 flex justify-center border-t border-ink-200 pt-6">
         <Button type="submit" size="lg" disabled={busy} className="sm:min-w-48">
           {busy ? (
             <>

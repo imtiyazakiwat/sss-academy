@@ -5,7 +5,6 @@ import { JsonLd } from "@/components/JsonLd";
 import { Reveal } from "@/components/motion/Reveal";
 import { CourseCard } from "@/components/site/CourseCard";
 import { CourseHero } from "@/components/site/CourseHero";
-import { EnquiryForm } from "@/components/site/EnquiryForm";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
 import { Container, Eyebrow, Section } from "@/components/ui/Section";
 import {
@@ -15,7 +14,6 @@ import {
   relatedCourses,
 } from "@/content/courses";
 import { placements } from "@/content/placements";
-import { contact } from "@/content/site";
 import { breadcrumbSchema, courseSchema } from "@/lib/schema";
 
 /** All eleven courses are known at build time — prerender every detail page. */
@@ -123,6 +121,13 @@ export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
                   </ul>
                 </div>
               </Reveal>
+
+              <Reveal delay={120} className="mt-8 flex justify-center">
+                <ButtonLink href={`/contact?course=${course.slug}#enquiry-form`} size="lg" className="text-base px-8 py-4 shadow-lg">
+                  Send my enquiry
+                  <ArrowIcon />
+                </ButtonLink>
+              </Reveal>
             </div>
 
             {/* Sticky proof + conversion rail */}
@@ -168,38 +173,6 @@ export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
         </Container>
       </Section>
 
-      <Section id="enquire" tone="muted" className="py-16 sm:py-20">
-        <Container>
-          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
-            <Reveal className="lg:col-span-5">
-              <Eyebrow>Enquire</Eyebrow>
-              <h2 className="text-headline mt-4 text-navy-950">
-                Ask about the {course.title} batch
-              </h2>
-              <p className="mt-5 leading-relaxed text-ink-600">
-                Send us your details and we&apos;ll get back to you with batch
-                timings, fees and whether this is the right starting point for
-                your background.
-              </p>
-              <p className="mt-6 text-sm text-ink-500">
-                Prefer to talk?{" "}
-                <a
-                  href={`tel:${contact.phoneHrefs[0]}`}
-                  className="font-medium text-navy-900 underline decoration-ember-400 decoration-2 underline-offset-2"
-                >
-                  {contact.phones[0]}
-                </a>
-              </p>
-            </Reveal>
-
-            <Reveal delay={100} className="lg:col-span-7">
-              <div className="border-t-4 border-navy-900 bg-[#fffdf8] p-6 shadow-[10px_10px_0_0_#e3ede5] sm:p-8">
-                <EnquiryForm defaultCourse={course.slug} />
-              </div>
-            </Reveal>
-          </div>
-        </Container>
-      </Section>
 
       <Section className="py-16 sm:py-20">
         <Container>
