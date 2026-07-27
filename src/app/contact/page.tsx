@@ -87,7 +87,7 @@ export default async function ContactPage({
             <Reveal className="lg:col-span-7">
               <div className="border-t-4 border-navy-900 bg-[#fffdf8] p-6 shadow-[10px_10px_0_0_#e3ede5] sm:p-8">
                 <div className="mt-4">
-                  <EnquiryForm defaultCourse={course} />
+                  <EnquiryForm key={course ?? ""} defaultCourse={course} />
                 </div>
               </div>
             </Reveal>

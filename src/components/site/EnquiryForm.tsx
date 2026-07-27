@@ -33,6 +33,12 @@ export function EnquiryForm({
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (defaultCourse) {
+      setValues((current) => ({ ...current, course: defaultCourse }));
+    }
+  }, [defaultCourse]);
+
+  useEffect(() => {
     if (status === "success") successRef.current?.focus();
     if (status === "error" && formError) errorRef.current?.focus();
   }, [formError, status]);
