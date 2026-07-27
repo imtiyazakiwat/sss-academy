@@ -59,7 +59,13 @@ export const metadata: Metadata = {
   alternates: { canonical: "/contact" },
 };
 
-export default function ContactPage() {
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ course?: string }>;
+}) {
+  const { course } = await searchParams;
+
   return (
     <>
       <PageHero
@@ -70,7 +76,7 @@ export default function ContactPage() {
         breadcrumb={[{ name: "Contact", href: "/contact" }]}
       />
 
-      <Section className="py-16 sm:py-20">
+      <Section id="enquiry-form" className="py-16 sm:py-20">
         <Container>
           <Reveal className="mb-12 text-center">
             <h2 className="text-headline text-navy-950">Contact Form</h2>
@@ -81,7 +87,7 @@ export default function ContactPage() {
             <Reveal className="lg:col-span-7">
               <div className="border-t-4 border-navy-900 bg-[#fffdf8] p-6 shadow-[10px_10px_0_0_#e3ede5] sm:p-8">
                 <div className="mt-4">
-                  <EnquiryForm />
+                  <EnquiryForm defaultCourse={course} />
                 </div>
               </div>
             </Reveal>
