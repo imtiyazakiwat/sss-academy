@@ -4,9 +4,9 @@
  */
 
 export const stats = [
-  { value: 1000, suffix: "+", label: "Students placed" },
-  { value: 11, suffix: "", label: "Courses offered" },
-  { value: 26, suffix: "+", label: "Years of industry experience" },
+  { value: 1000, suffix: "+", label: "Placed" },
+  { value: 11, suffix: "", label: "Courses" },
+  { value: 26, suffix: "+", label: "Years experience" },
 ] as const;
 
 export const story = {

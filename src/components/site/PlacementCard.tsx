@@ -49,7 +49,7 @@ export function PlacementCard({
           <p className="truncate text-xs text-ink-500">{placement.role}</p>
         </div>
         <span className="ml-auto shrink-0 rounded-full bg-navy-950 px-2.5 py-1 font-mono text-xs font-medium text-white">
-          {placement.packageLpa.toFixed(2)} LPA
+          {placement.packageLpa} LPA
         </span>
       </div>
 
@@ -61,20 +61,6 @@ export function PlacementCard({
       >
         {placement.quote}
       </blockquote>
-
-      <figcaption className="mt-auto flex items-center gap-2 pt-5 text-xs text-ink-400">
-        <svg viewBox="0 0 14 14" className="size-3.5 shrink-0" aria-hidden="true">
-          <path
-            d="M2.5 12V3.2c0-.4.3-.7.7-.7h4.1c.4 0 .7.3.7.7V12M8 6h2.8c.4 0 .7.3.7.7V12M1.2 12h11.6M4.6 5h1.4M4.6 7.5h1.4M4.6 10h1.4"
-            stroke="currentColor"
-            strokeWidth="1.1"
-            strokeLinecap="round"
-            fill="none"
-          />
-        </svg>
-        Placed at {placement.company}
-        {placement.location ? ` · ${placement.location}` : ""}
-      </figcaption>
     </figure>
   );
 }
