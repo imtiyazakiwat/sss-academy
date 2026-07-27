@@ -2,14 +2,18 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { Console } from "@/components/playground/Console";
 import { useDb, type DockTab } from "@/components/playground/DbProvider";
+import { ThemeToggle } from "@/components/playground/PlaygroundTheme";
 import { Quiz } from "@/components/playground/Quiz";
-import { ResultTable } from "@/components/playground/ResultTable";
+import { ResultPanel } from "@/components/playground/ResultPanel";
+import { SchemaMap } from "@/components/playground/SchemaMap";
+import { Splitter, useResizable } from "@/components/playground/Splitter";
 import { adjacentLabs, labGroups, type Lab } from "@/content/labs";
 import { durationLabel, getCourse } from "@/content/courses";
+import { quoteIdent } from "@/lib/sqlite";
 import { cn } from "@/lib/cn";
 
 const DOCK_TABS: { id: DockTab; label: string }[] = [
@@ -20,8 +24,13 @@ const DOCK_TABS: { id: DockTab; label: string }[] = [
 ];
 
 /**
- * The application chrome every lab renders inside: lab rail, header with the
- * course cross-link and job controls, the lab body, and the bottom dock.
+ * The workspace every lab renders inside.
+ *
+ * Laid out like an editor rather than a page: a lab rail, a centre stage that
+ * switches between the lab and the live schema map, and a dock. Every boundary
+ * is a real splitter, and nothing here scrolls as a document — each pane owns
+ * its own overflow, which is what stops the editor sliding off-screen when
+ * someone goes looking at the data.
  *
  * `data-playground-shell` is what lets globals.css hide the marketing footer and
  * mobile CTA bar for this route. A nested layout cannot remove nodes the root
@@ -36,13 +45,46 @@ export function PlaygroundShell({
   children: ReactNode;
 }) {
   const router = useRouter();
-  const { status, error, dockTab, setDockTab, outcome, reset, resetting } = useDb();
+  const {
+    status,
+    error,
+    dockTab,
+    setDockTab,
+    outcome,
+    reset,
+    resetting,
+    autoRun,
+    setAutoRun,
+    loadEditorSql,
+    stage,
+    setStage,
+    run,
+  } = useDb();
+
+  const centreRef = useRef<HTMLDivElement>(null);
   const [dockOpen, setDockOpen] = useState(true);
   const [present, setPresent] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
 
   const course = getCourse(lab.courseSlug);
   const { prev, next } = adjacentLabs(lab.slug);
+
+  const dock = useResizable({
+    storageKey: "sss-pg-dock-h",
+    initial: 248,
+    min: 120,
+    max: () => Math.max(160, (centreRef.current?.clientHeight ?? 700) - 220),
+    axis: "y",
+    invert: true,
+  });
+
+  const rail = useResizable({
+    storageKey: "sss-pg-rail-w",
+    initial: 240,
+    min: 168,
+    max: 420,
+    axis: "x",
+  });
 
   const go = useCallback(
     (target: Lab | undefined) => {
@@ -76,34 +118,55 @@ export function PlaygroundShell({
     return () => window.removeEventListener("keydown", onKey);
   }, [present, next, prev, go, setDockTab]);
 
+  const peek = useCallback(
+    (table: string) => {
+      // The store can switch the dock's tab but not open it, so a peek with the
+      // dock collapsed would run and show nothing at all.
+      setDockOpen(true);
+      run(`SELECT * FROM ${quoteIdent(table)} LIMIT 50;`, {
+        label: `Peek ${table}`,
+      });
+    },
+    [run],
+  );
+
   return (
     <div
       data-playground-shell=""
       className={cn(
-        "flex h-[calc(100dvh-var(--header-h))] flex-col bg-navy-950 text-ink-100",
+        "flex h-[calc(100dvh-var(--header-h))] flex-col bg-pg-bg text-pg-text",
         present && "fixed inset-0 z-50 h-dvh",
       )}
     >
       <div className="flex min-h-0 flex-1">
         {/* Lab rail */}
         <aside
+          style={{ width: rail.size }}
           className={cn(
-            "w-60 shrink-0 flex-col overflow-y-auto border-r border-white/8 bg-navy-950/80 px-3 py-4",
+            "pg-scroll shrink-0 flex-col overflow-y-auto border-r border-pg-line bg-pg-surface px-3 py-4",
             present ? "hidden" : "hidden lg:flex",
           )}
         >
           <LabRail activeSlug={lab.slug} />
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col">
+        {!present ? (
+          <Splitter
+            {...rail.handleProps}
+            label="Resize the lab list"
+            className="hidden lg:block"
+          />
+        ) : null}
+
+        <div ref={centreRef} className="flex min-w-0 flex-1 flex-col">
           {/* Header */}
-          <header className="shrink-0 border-b border-white/8 bg-navy-950/90 px-4 py-3 backdrop-blur sm:px-5">
+          <header className="shrink-0 border-b border-pg-line bg-pg-surface px-4 py-2.5 sm:px-5">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <button
                 type="button"
                 onClick={() => setRailOpen((open) => !open)}
                 aria-expanded={railOpen}
-                className="rounded-full border border-white/15 px-3 py-1 text-xs text-ink-300 transition-colors hover:border-white/30 hover:text-white lg:hidden"
+                className="rounded-full border border-pg-line px-3 py-1 text-xs text-pg-dim transition-colors hover:border-pg-line-strong hover:text-pg-text lg:hidden"
               >
                 {railOpen ? "Hide labs" : "All labs"}
               </button>
@@ -113,18 +176,18 @@ export function PlaygroundShell({
                   {course ? (
                     <Link
                       href={`/courses/${course.slug}`}
-                      className="text-eyebrow truncate uppercase text-violet-300 transition-colors hover:text-violet-200"
+                      className="text-eyebrow truncate uppercase text-pg-gold transition-colors hover:text-pg-primary"
                     >
                       {course.title}
                     </Link>
                   ) : null}
-                  <span className="text-[0.6875rem] text-ink-500">
+                  <span className="text-[0.6875rem] text-pg-faint">
                     {lab.minutes} min
                   </span>
                 </div>
                 <h1
                   className={cn(
-                    "mt-0.5 truncate font-semibold tracking-[-0.02em] text-white",
+                    "mt-0.5 truncate font-semibold tracking-[-0.02em] text-pg-text",
                     present ? "text-2xl" : "text-lg",
                   )}
                 >
@@ -133,14 +196,12 @@ export function PlaygroundShell({
               </div>
 
               <div className="flex items-center gap-1.5">
-                <StatusPill status={status} />
-
                 <button
                   type="button"
                   onClick={reset}
                   disabled={resetting || status !== "ready"}
                   title="Restore every table to its seeded state"
-                  className="rounded-full border border-white/15 px-3 py-1.5 text-xs font-medium text-ink-200 transition-colors hover:border-white/30 hover:text-white disabled:opacity-50"
+                  className="rounded-full border border-pg-line px-3 py-1.5 text-xs font-medium text-pg-dim transition-colors hover:border-pg-line-strong hover:text-pg-text disabled:opacity-50"
                 >
                   {resetting ? "Resetting…" : "Reset DB"}
                 </button>
@@ -152,8 +213,8 @@ export function PlaygroundShell({
                   className={cn(
                     "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
                     present
-                      ? "border-ember-500/60 bg-ember-500/15 text-ember-100"
-                      : "border-white/15 text-ink-200 hover:border-white/30 hover:text-white",
+                      ? "border-pg-primary bg-pg-primary-soft text-pg-primary"
+                      : "border-pg-line text-pg-dim hover:border-pg-line-strong hover:text-pg-text",
                   )}
                 >
                   {present ? "Exit present" : "Present"}
@@ -177,7 +238,7 @@ export function PlaygroundShell({
             </div>
 
             {present ? (
-              <p className="mt-2 font-mono text-[0.6875rem] text-ink-500">
+              <p className="mt-2 font-mono text-[0.6875rem] text-pg-faint">
                 ← → move between labs · N opens teacher notes · Esc exits
               </p>
             ) : null}
@@ -185,44 +246,88 @@ export function PlaygroundShell({
 
           {/* Mobile rail */}
           {railOpen ? (
-            <div className="max-h-72 overflow-y-auto border-b border-white/8 bg-navy-900 px-3 py-3 lg:hidden">
-              <LabRail activeSlug={lab.slug} onNavigate={() => setRailOpen(false)} />
+            <div className="pg-scroll max-h-72 overflow-y-auto border-b border-pg-line bg-pg-surface px-3 py-3 lg:hidden">
+              <LabRail
+                activeSlug={lab.slug}
+                onNavigate={() => setRailOpen(false)}
+              />
             </div>
           ) : null}
 
-          {/* Lab body */}
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-5">
+          {/* Stage tabs */}
+          <div className="flex shrink-0 items-center gap-1 border-b border-pg-line bg-pg-surface px-3">
+            <StageTab
+              active={stage === "lab"}
+              onClick={() => setStage("lab")}
+              label={lab.kind === "query" ? "Editor" : "Lab"}
+            />
+            <StageTab
+              active={stage === "map"}
+              onClick={() => setStage("map")}
+              label="Database map"
+            />
+            <p className="ml-auto hidden font-mono text-[0.6875rem] text-pg-faint md:block">
+              {stage === "map"
+                ? "Live schema · drag, zoom, click a table"
+                : lab.topics.slice(0, 3).join(" · ")}
+            </p>
+          </div>
+
+          {/* Stage */}
+          <div className="min-h-0 flex-1">
             {status === "error" ? (
-              <div
-                role="alert"
-                className="mx-auto max-w-xl rounded-2xl border border-ember-500/40 bg-ember-500/10 p-5"
-              >
-                <h2 className="font-semibold text-white">
-                  The SQLite engine could not start
-                </h2>
-                <p className="mt-2 text-sm leading-relaxed text-ember-100">{error}</p>
-                <p className="mt-3 text-xs leading-relaxed text-ink-300">
-                  The playground needs WebAssembly. If this is a fresh checkout, run
-                  <code className="mx-1 rounded bg-white/10 px-1.5 py-0.5 font-mono">
-                    npm install
-                  </code>
-                  so the runtime is copied into public/sql, then reload.
-                </p>
+              <div className="pg-scroll h-full overflow-y-auto px-4 py-6">
+                <div
+                  role="alert"
+                  className="mx-auto max-w-xl rounded-2xl border border-pg-rose/45 bg-pg-rose-soft p-5"
+                >
+                  <h2 className="font-semibold text-pg-text">
+                    The SQLite engine could not start
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-pg-rose">
+                    {error}
+                  </p>
+                  <p className="mt-3 text-xs leading-relaxed text-pg-dim">
+                    The playground needs WebAssembly. If this is a fresh
+                    checkout, run
+                    <code className="mx-1 rounded bg-pg-hover px-1.5 py-0.5 font-mono">
+                      npm install
+                    </code>
+                    so the runtime is copied into public/sql, then reload.
+                  </p>
+                </div>
               </div>
+            ) : stage === "map" ? (
+              <SchemaMap
+                onQuery={
+                  lab.kind === "query"
+                    ? (sql) => loadEditorSql(lab.slug, sql)
+                    : undefined
+                }
+                onPeek={peek}
+              />
             ) : (
-              <div className={cn(present && "mx-auto max-w-5xl text-[1.05rem]")}>
+              <div
+                className={cn(
+                  "h-full min-h-0",
+                  present && "mx-auto max-w-6xl text-[1.05rem]",
+                )}
+              >
                 {children}
               </div>
             )}
           </div>
 
-          {/* Bottom dock */}
-          <div className="shrink-0 border-t border-white/8 bg-navy-950/95">
+          {/* Dock */}
+          {dockOpen ? (
+            <Splitter {...dock.handleProps} label="Resize the panel" />
+          ) : null}
+
+          <div className="shrink-0 border-t border-pg-line bg-pg-surface">
             <div className="flex items-center gap-1 px-3 py-1.5">
               {DOCK_TABS.map((tab) => {
                 const active = dockTab === tab.id && dockOpen;
-                const badge =
-                  tab.id === "quiz" ? lab.quiz?.length : undefined;
+                const badge = tab.id === "quiz" ? lab.quiz?.length : undefined;
                 return (
                   <button
                     key={tab.id}
@@ -233,17 +338,23 @@ export function PlaygroundShell({
                     }}
                     aria-pressed={active}
                     className={cn(
-                      "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                      "relative rounded-full px-3 py-1 text-xs font-medium transition-colors",
                       active
-                        ? "bg-white/10 text-white"
-                        : "text-ink-400 hover:bg-white/5 hover:text-ink-100",
+                        ? "bg-pg-hover text-pg-text"
+                        : "text-pg-faint hover:bg-pg-hover hover:text-pg-text",
                     )}
                   >
                     {tab.label}
                     {badge ? (
-                      <span className="ml-1.5 font-mono text-[0.625rem] text-ink-500">
+                      <span className="ml-1.5 font-mono text-[0.625rem] text-pg-faint">
                         {badge}
                       </span>
+                    ) : null}
+                    {active ? (
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-x-3 -bottom-1 h-0.5 rounded-full bg-pg-primary"
+                      />
                     ) : null}
                   </button>
                 );
@@ -253,20 +364,23 @@ export function PlaygroundShell({
                 type="button"
                 onClick={() => setDockOpen((open) => !open)}
                 aria-expanded={dockOpen}
-                className="ml-auto rounded-full px-2.5 py-1 text-xs text-ink-400 transition-colors hover:text-white"
+                title={dockOpen ? "Collapse panel" : "Expand panel"}
+                className="ml-auto rounded-full px-2.5 py-1 text-xs text-pg-faint transition-colors hover:text-pg-text"
               >
                 {dockOpen ? "Collapse" : "Expand"}
               </button>
             </div>
 
             {dockOpen ? (
-              <div className="h-56 overflow-y-auto border-t border-white/8 px-4 py-3 sm:h-64">
+              <div
+                style={{ height: dock.size }}
+                className={cn(
+                  "pg-scroll overflow-y-auto border-t border-pg-line px-4 py-3",
+                  !dock.dragging && "transition-[height] duration-150",
+                )}
+              >
                 {dockTab === "result" ? (
-                  <ResultTable
-                    set={outcome?.sets[0] ?? null}
-                    error={outcome?.error}
-                    empty="Run something and the rows land here."
-                  />
+                  <ResultPanel outcome={outcome} />
                 ) : null}
                 {dockTab === "console" ? <Console className="h-full" /> : null}
                 {dockTab === "quiz" ? <Quiz questions={lab.quiz ?? []} /> : null}
@@ -278,7 +392,82 @@ export function PlaygroundShell({
           </div>
         </div>
       </div>
+
+      {/* Status bar */}
+      <footer className="flex shrink-0 items-center gap-3 border-t border-pg-line bg-pg-surface px-3 py-1 text-[0.6875rem]">
+        <StatusPill status={status} />
+
+        <button
+          type="button"
+          onClick={() => setAutoRun(!autoRun)}
+          aria-pressed={autoRun}
+          title="When on, loading an example or a table runs it immediately"
+          className={cn(
+            "flex items-center gap-1.5 rounded-full px-2 py-0.5 transition-colors",
+            autoRun
+              ? "bg-pg-primary-soft text-pg-primary"
+              : "text-pg-faint hover:text-pg-text",
+          )}
+        >
+          <span
+            aria-hidden="true"
+            className={cn(
+              "flex h-3 w-5 items-center rounded-full p-px transition-colors",
+              autoRun ? "bg-pg-primary" : "bg-pg-line-strong",
+            )}
+          >
+            <span
+              className={cn(
+                "size-2.5 rounded-full bg-pg-surface transition-transform duration-200",
+                autoRun && "translate-x-2",
+              )}
+            />
+          </span>
+          Auto-run {autoRun ? "on" : "off"}
+        </button>
+
+        <span className="hidden text-pg-faint sm:inline">
+          {lab.topics.length} topics
+        </span>
+
+        <div className="ml-auto flex items-center gap-2">
+          <span className="hidden font-mono text-pg-faint md:inline">
+            ⌘↵ run · ⌘/ctrl+scroll zoom
+          </span>
+          <ThemeToggle className="flex size-6 items-center justify-center rounded-full text-pg-dim transition-colors hover:bg-pg-hover hover:text-pg-text" />
+        </div>
+      </footer>
     </div>
+  );
+}
+
+function StageTab({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "relative px-3 py-2 text-[0.8125rem] font-medium transition-colors",
+        active ? "text-pg-text" : "text-pg-faint hover:text-pg-dim",
+      )}
+    >
+      {label}
+      {active ? (
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-pg-primary"
+        />
+      ) : null}
+    </button>
   );
 }
 
@@ -294,14 +483,14 @@ function LabRail({
       <Link
         href="/playground"
         onClick={onNavigate}
-        className="flex items-center gap-1.5 text-xs text-ink-400 transition-colors hover:text-white"
+        className="flex items-center gap-1.5 text-xs text-pg-dim transition-colors hover:text-pg-text"
       >
         <span aria-hidden="true">←</span> Playground home
       </Link>
 
       {labGroups.map((group) => (
         <div key={group.course.slug}>
-          <p className="text-eyebrow px-2 uppercase text-ink-500">
+          <p className="text-eyebrow px-2 uppercase text-pg-faint">
             {group.course.title}
           </p>
           <ul className="mt-1.5 space-y-0.5">
@@ -316,8 +505,8 @@ function LabRail({
                     className={cn(
                       "block rounded-lg px-2.5 py-1.5 text-[0.8125rem] transition-colors",
                       active
-                        ? "bg-violet-500/20 font-medium text-white"
-                        : "text-ink-300 hover:bg-white/5 hover:text-white",
+                        ? "bg-pg-primary-soft font-medium text-pg-primary"
+                        : "text-pg-dim hover:bg-pg-hover hover:text-pg-text",
                     )}
                   >
                     {lab.short}
@@ -334,26 +523,19 @@ function LabRail({
 
 function StatusPill({ status }: { status: "loading" | "ready" | "error" }) {
   const map = {
-    loading: { label: "Booting SQLite", className: "bg-amber-400/15 text-amber-100" },
-    ready: { label: "SQLite live", className: "bg-mint-500/15 text-mint-100" },
-    error: { label: "Engine failed", className: "bg-ember-500/15 text-ember-100" },
+    loading: { label: "Booting SQLite", className: "text-pg-gold" },
+    ready: { label: "SQLite live", className: "text-pg-sky" },
+    error: { label: "Engine failed", className: "text-pg-rose" },
   } as const;
   const { label, className } = map[status];
 
   return (
-    <span
-      className={cn(
-        "hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-medium sm:inline-flex",
-        className,
-      )}
-    >
+    <span className={cn("flex items-center gap-1.5", className)}>
       <span
         aria-hidden="true"
         className={cn(
-          "size-1.5 rounded-full",
-          status === "ready" && "bg-mint-500",
-          status === "loading" && "animate-pulse bg-amber-300",
-          status === "error" && "bg-ember-500",
+          "size-1.5 rounded-full bg-current",
+          status === "loading" && "animate-pulse",
         )}
       />
       {label}
@@ -377,17 +559,23 @@ function NavArrow({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      title={label ? `${direction === "prev" ? "Previous" : "Next"}: ${label}` : undefined}
+      title={
+        label
+          ? `${direction === "prev" ? "Previous" : "Next"}: ${label}`
+          : undefined
+      }
       aria-label={
         label
           ? `${direction === "prev" ? "Previous lab" : "Next lab"}: ${label}`
           : `No ${direction === "prev" ? "previous" : "next"} lab`
       }
-      className="flex size-7 items-center justify-center rounded-full border border-white/15 text-ink-300 transition-colors hover:border-white/30 hover:text-white disabled:opacity-35"
+      className="flex size-7 items-center justify-center rounded-full border border-pg-line text-pg-dim transition-colors hover:border-pg-line-strong hover:text-pg-text disabled:opacity-35"
     >
       <svg viewBox="0 0 16 16" aria-hidden="true" className="size-3.5">
         <path
-          d={direction === "prev" ? "M10 3.5 5.5 8 10 12.5" : "M6 3.5 10.5 8 6 12.5"}
+          d={
+            direction === "prev" ? "M10 3.5 5.5 8 10 12.5" : "M6 3.5 10.5 8 6 12.5"
+          }
           fill="none"
           stroke="currentColor"
           strokeWidth="1.8"
@@ -405,31 +593,36 @@ function TeacherNotes({ lab, courseTitle }: { lab: Lab; courseTitle?: string }) 
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-eyebrow uppercase text-violet-300">Teaching notes</h2>
+        <h2 className="text-eyebrow uppercase text-pg-gold">Teaching notes</h2>
         <ul className="mt-2.5 space-y-2">
           {lab.notes.map((note) => (
             <li
               key={note}
-              className="flex gap-2.5 text-[0.8125rem] leading-relaxed text-ink-200"
+              className="flex gap-2.5 text-[0.8125rem] leading-relaxed text-pg-text"
             >
-              <span aria-hidden="true" className="mt-2 size-1 shrink-0 rounded-full bg-ember-400" />
+              <span
+                aria-hidden="true"
+                className="mt-2 size-1 shrink-0 rounded-full bg-pg-primary"
+              />
               {note}
             </li>
           ))}
         </ul>
       </div>
 
-      <div className="border-t border-white/8 pt-3">
-        <h2 className="text-eyebrow uppercase text-ink-500">Syllabus coverage</h2>
-        <p className="mt-2 text-[0.8125rem] leading-relaxed text-ink-300">
+      <div className="border-t border-pg-line pt-3">
+        <h2 className="text-eyebrow uppercase text-pg-faint">Syllabus coverage</h2>
+        <p className="mt-2 text-[0.8125rem] leading-relaxed text-pg-dim">
           {courseTitle ?? lab.courseSlug}
-          {course ? ` · ${durationLabel(course.durationMonths)} · ${course.level}` : null}
+          {course
+            ? ` · ${durationLabel(course.durationMonths)} · ${course.level}`
+            : null}
         </p>
         <ul className="mt-2 flex flex-wrap gap-1.5">
           {lab.topics.map((topic) => (
             <li
               key={topic}
-              className="rounded-full bg-white/8 px-2.5 py-1 text-[0.6875rem] text-ink-200"
+              className="rounded-full bg-pg-hover px-2.5 py-1 text-[0.6875rem] text-pg-dim"
             >
               {topic}
             </li>

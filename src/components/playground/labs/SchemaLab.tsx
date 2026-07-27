@@ -1,51 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { useDb, useQuery } from "@/components/playground/DbProvider";
-import { LabIntro, Panel, PillButton, Stat } from "@/components/playground/LabChrome";
+import {
+  LabIntro,
+  LabScroll,
+  Panel,
+  PillButton,
+  Stat,
+} from "@/components/playground/LabChrome";
 import { ResultTable } from "@/components/playground/ResultTable";
+import { SchemaMap } from "@/components/playground/SchemaMap";
 import type { Lab } from "@/content/labs";
+import type { DbTable } from "@/lib/db-map";
 import { quoteIdent } from "@/lib/sqlite";
 import { cn } from "@/lib/cn";
 
-interface Node {
-  table: string;
-  label: string;
-  role: "fact" | "dimension" | "outrigger";
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  /** Foreign key on the fact table, for the join description. */
-  key?: string;
-  /** Only rendered when snowflake mode is on. */
-  snowflakeOnly?: boolean;
-  /** Query this node's Run button executes, in star form. */
-  query?: string;
-  /** Query used instead when snowflaked. */
-  snowflakeQuery?: string;
-}
+const STAR_GROUP = "Warehouse — star schema";
+const SNOWFLAKE_GROUP = "Snowflake extension";
 
-const FACT = { x: 320, y: 200, width: 190, height: 96 };
-
-const NODES: Node[] = [
-  {
-    table: "fact_sales",
-    label: "fact_sales",
-    role: "fact",
-    ...FACT,
-  },
-  {
-    table: "dim_date",
-    label: "dim_date",
-    role: "dimension",
-    x: 50,
-    y: 40,
-    width: 170,
-    height: 78,
-    key: "date_key",
-    query: `SELECT d.month_number, d.month_name, d.quarter,
+/** The join each dimension exists to serve, in star and snowflake form. */
+const QUERIES: Record<string, { star: string; snowflake?: string }> = {
+  dim_date: {
+    star: `SELECT d.month_number, d.month_name, d.quarter,
        SUM(f.amount) AS revenue,
        SUM(f.quantity) AS units
 FROM fact_sales f
@@ -53,16 +31,8 @@ JOIN dim_date d ON d.date_key = f.date_key
 GROUP BY d.month_number, d.month_name, d.quarter
 ORDER BY d.month_number;`,
   },
-  {
-    table: "dim_customer",
-    label: "dim_customer",
-    role: "dimension",
-    x: 50,
-    y: 378,
-    width: 170,
-    height: 78,
-    key: "customer_key",
-    query: `SELECT dc.segment, dc.state,
+  dim_customer: {
+    star: `SELECT dc.segment, dc.state,
        COUNT(DISTINCT dc.customer_key) AS customers,
        SUM(f.amount) AS revenue
 FROM fact_sales f
@@ -70,23 +40,15 @@ JOIN dim_customer dc ON dc.customer_key = f.customer_key
 GROUP BY dc.segment, dc.state
 ORDER BY revenue DESC;`,
   },
-  {
-    table: "dim_product",
-    label: "dim_product",
-    role: "dimension",
-    x: 610,
-    y: 40,
-    width: 170,
-    height: 78,
-    key: "product_key",
-    query: `SELECT dp.category, dp.brand,
+  dim_product: {
+    star: `SELECT dp.category, dp.brand,
        SUM(f.quantity) AS units,
        SUM(f.amount) AS revenue
 FROM fact_sales f
 JOIN dim_product dp ON dp.product_key = f.product_key
 GROUP BY dp.category, dp.brand
 ORDER BY revenue DESC;`,
-    snowflakeQuery: `SELECT cat.category_group, cat.category_name, br.brand_name, br.country,
+    snowflake: `SELECT cat.category_group, cat.category_name, br.brand_name, br.country,
        SUM(f.amount) AS revenue
 FROM fact_sales f
 JOIN dim_product dp  ON dp.product_key = f.product_key
@@ -95,59 +57,46 @@ JOIN dim_brand br     ON br.brand_key = dp.brand_key
 GROUP BY cat.category_group, cat.category_name, br.brand_name, br.country
 ORDER BY revenue DESC;`,
   },
-  {
-    table: "dim_category",
-    label: "dim_category",
-    role: "outrigger",
-    x: 610,
-    y: 250,
-    width: 170,
-    height: 66,
-    snowflakeOnly: true,
-    query: `SELECT category_group, category_name FROM dim_category ORDER BY category_group;`,
+  dim_category: {
+    star: `SELECT category_group, category_name FROM dim_category ORDER BY category_group;`,
   },
-  {
-    table: "dim_brand",
-    label: "dim_brand",
-    role: "outrigger",
-    x: 610,
-    y: 366,
-    width: 170,
-    height: 66,
-    snowflakeOnly: true,
-    query: `SELECT brand_name, country FROM dim_brand ORDER BY brand_name;`,
+  dim_brand: {
+    star: `SELECT brand_name, country FROM dim_brand ORDER BY brand_name;`,
   },
-];
-
-const centre = (node: { x: number; y: number; width: number; height: number }) => ({
-  x: node.x + node.width / 2,
-  y: node.y + node.height / 2,
-});
+  fact_sales: {
+    star: `SELECT order_id, date_key, customer_key, product_key, quantity, amount
+FROM fact_sales
+ORDER BY amount DESC
+LIMIT 20;`,
+  },
+};
 
 /**
- * Interactive star / snowflake diagram.
+ * Star and snowflake, on the live canvas.
  *
- * Hand-drawn SVG rather than a graph library: six nodes with a fixed layout do
- * not need force simulation, and this way the shape stays legible and the whole
- * thing costs nothing to load. Clicking a dimension highlights its edge, lists
- * its real columns from PRAGMA, and runs the join that uses it.
+ * This used to be a hand-drawn SVG with six hard-coded nodes. It is now the real
+ * schema map narrowed to the warehouse lanes, so the boxes carry actual columns
+ * and the lines are the actual foreign keys SQLite has registered — and the
+ * snowflake toggle genuinely brings the outrigger tables into the picture rather
+ * than revealing decorations. Everything below the canvas still reads from PRAGMA.
  */
 export function SchemaLab({ lab }: { lab: Lab }) {
   const { run, status } = useDb();
   const [snowflake, setSnowflake] = useState(false);
   const [selected, setSelected] = useState("dim_customer");
 
-  const visible = NODES.filter((node) => !node.snowflakeOnly || snowflake);
-  // Selecting dim_product and then collapsing to star must not leave a dangling
-  // selection, so fall back to the first visible node.
-  const selectedNode = visible.find((node) => node.table === selected) ?? visible[0];
-  const activeQuery =
-    snowflake && selectedNode.snowflakeQuery
-      ? selectedNode.snowflakeQuery
-      : (selectedNode.query ?? null);
+  const filter = useCallback(
+    (table: DbTable) =>
+      table.group === STAR_GROUP ||
+      (snowflake && table.group === SNOWFLAKE_GROUP),
+    [snowflake],
+  );
 
-  const columns = useQuery(`PRAGMA table_info(${quoteIdent(selectedNode.table)});`);
-  const rowCount = useQuery(`SELECT COUNT(*) FROM ${quoteIdent(selectedNode.table)};`);
+  const entry = QUERIES[selected];
+  const activeQuery = snowflake && entry?.snowflake ? entry.snowflake : entry?.star;
+
+  const columns = useQuery(`PRAGMA table_info(${quoteIdent(selected)});`);
+  const rowCount = useQuery(`SELECT COUNT(*) FROM ${quoteIdent(selected)};`);
   const grain = useQuery(
     `SELECT COUNT(*) AS fact_rows,
             COUNT(DISTINCT order_id) AS distinct_orders,
@@ -170,14 +119,11 @@ export function SchemaLab({ lab }: { lab: Lab }) {
      JOIN dim_product dp ON dp.product_key = f.product_key) AS joined_to_product;`;
   const integrity = useQuery(integritySql);
 
-  const joinCount = activeQuery
-    ? (activeQuery.match(/\bJOIN\b/gi) ?? []).length
-    : 0;
-
+  const joinCount = activeQuery ? (activeQuery.match(/\bJOIN\b/gi) ?? []).length : 0;
   const factRow = grain?.values[0] ?? [];
 
   return (
-    <div className="space-y-5">
+    <LabScroll>
       <LabIntro lab={lab} />
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -206,159 +152,34 @@ export function SchemaLab({ lab }: { lab: Lab }) {
             ? "dim_product is normalised into category and brand levels — two extra joins per query."
             : "Every dimension is one join from the fact table."
         }
+        bodyClassName="p-0"
         actions={
           <PillButton onClick={() => setSnowflake((on) => !on)}>
             {snowflake ? "Collapse to star" : "Snowflake dim_product"}
           </PillButton>
         }
       >
-        <svg
-          viewBox="0 0 830 480"
-          className="w-full"
-          role="img"
-          aria-label={`${snowflake ? "Snowflake" : "Star"} schema diagram. fact_sales joined to ${visible
-            .filter((node) => node.role !== "fact")
-            .map((node) => node.table)
-            .join(", ")}.`}
-        >
-          {/* Edges first, so nodes paint over the line ends. */}
-          {visible
-            .filter((node) => node.role === "dimension")
-            .map((node) => {
-              const from = centre(FACT);
-              const to = centre(node);
-              const active = selected === node.table;
-              return (
-                <g key={`edge-${node.table}`}>
-                  <line
-                    x1={from.x}
-                    y1={from.y}
-                    x2={to.x}
-                    y2={to.y}
-                    stroke={active ? "#d95d39" : "rgba(255,255,255,0.16)"}
-                    strokeWidth={active ? 2.5 : 1.5}
-                    className="transition-all duration-300"
-                  />
-                  <text
-                    x={(from.x + to.x) / 2}
-                    y={(from.y + to.y) / 2 - 8}
-                    textAnchor="middle"
-                    className={cn(
-                      "font-mono text-[11px] transition-colors duration-300",
-                      active ? "fill-ember-200" : "fill-ink-500",
-                    )}
-                  >
-                    {node.key}
-                  </text>
-                </g>
-              );
-            })}
-
-          {snowflake
-            ? visible
-                .filter((node) => node.role === "outrigger")
-                .map((node) => {
-                  const product = NODES.find((n) => n.table === "dim_product");
-                  if (!product) return null;
-                  const from = centre(product);
-                  const to = centre(node);
-                  return (
-                    <line
-                      key={`edge-${node.table}`}
-                      x1={from.x}
-                      y1={from.y}
-                      x2={to.x}
-                      y2={to.y}
-                      stroke="rgba(169,194,177,0.45)"
-                      strokeWidth={1.5}
-                      strokeDasharray="5 4"
-                    />
-                  );
-                })
-            : null}
-
-          {visible.map((node) => {
-            const active = selected === node.table;
-            const isFact = node.role === "fact";
-            return (
-              <g
-                key={node.table}
-                onClick={() => setSelected(node.table)}
-                className="cursor-pointer"
-                tabIndex={0}
-                role="button"
-                aria-pressed={active}
-                aria-label={`${node.table}, ${node.role}`}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    setSelected(node.table);
-                  }
-                }}
-              >
-                <rect
-                  x={node.x}
-                  y={node.y}
-                  width={node.width}
-                  height={node.height}
-                  rx={14}
-                  className="transition-all duration-300"
-                  fill={
-                    isFact
-                      ? "rgba(217,93,57,0.14)"
-                      : active
-                        ? "rgba(95,136,114,0.22)"
-                        : "rgba(255,255,255,0.04)"
-                  }
-                  stroke={
-                    isFact
-                      ? "rgba(217,93,57,0.55)"
-                      : active
-                        ? "rgba(169,194,177,0.75)"
-                        : "rgba(255,255,255,0.14)"
-                  }
-                  strokeWidth={active || isFact ? 2 : 1}
-                />
-                <text
-                  x={node.x + node.width / 2}
-                  y={node.y + 28}
-                  textAnchor="middle"
-                  className="fill-white font-mono text-[13px] font-medium"
-                >
-                  {node.label}
-                </text>
-                <text
-                  x={node.x + node.width / 2}
-                  y={node.y + 48}
-                  textAnchor="middle"
-                  className={cn(
-                    "text-[10px] uppercase",
-                    isFact ? "fill-ember-200" : "fill-ink-400",
-                  )}
-                  style={{ letterSpacing: "0.12em" }}
-                >
-                  {node.role}
-                </text>
-                {isFact ? (
-                  <text
-                    x={node.x + node.width / 2}
-                    y={node.y + 72}
-                    textAnchor="middle"
-                    className="fill-ink-300 font-mono text-[10px]"
-                  >
-                    quantity · amount
-                  </text>
-                ) : null}
-              </g>
-            );
-          })}
-        </svg>
+        <div className="h-[30rem] overflow-hidden">
+          <SchemaMap
+            embedded
+            tableFilter={filter}
+            onSelectionChange={(table) => {
+              if (table) setSelected(table);
+            }}
+            onPeek={(table) =>
+              run(`SELECT * FROM ${quoteIdent(table)} LIMIT 50;`, {
+                label: `Peek ${table}`,
+              })
+            }
+            toolbarNote="Click a table to inspect it below · drag to arrange · ⌘/ctrl + scroll to zoom"
+          />
+        </div>
       </Panel>
 
       <div className="grid gap-5 xl:grid-cols-12">
         <Panel
-          title={selectedNode.table}
-          subtitle={`${Number(rowCount?.values[0]?.[0] ?? 0).toLocaleString("en-IN")} rows · click any box in the diagram`}
+          title={selected}
+          subtitle={`${Number(rowCount?.values[0]?.[0] ?? 0).toLocaleString("en-IN")} rows · click any card on the canvas`}
           className="xl:col-span-5"
         >
           <ul className="space-y-1">
@@ -371,11 +192,11 @@ export function SchemaLab({ lab }: { lab: Lab }) {
                   key={name}
                   className={cn(
                     "flex items-baseline justify-between gap-3 rounded-lg px-2.5 py-1.5 font-mono text-[0.75rem]",
-                    isKey ? "bg-violet-500/12 text-violet-100" : "text-ink-200",
+                    isKey ? "bg-pg-gold-soft text-pg-gold" : "text-pg-text",
                   )}
                 >
                   <span>{name}</span>
-                  <span className="text-ink-500">{type}</span>
+                  <span className="text-pg-faint">{type}</span>
                 </li>
               );
             })}
@@ -383,7 +204,7 @@ export function SchemaLab({ lab }: { lab: Lab }) {
         </Panel>
 
         <Panel
-          title="The query this dimension serves"
+          title="The query this table serves"
           subtitle={`${joinCount} ${joinCount === 1 ? "join" : "joins"} in ${snowflake ? "snowflake" : "star"} form`}
           className="xl:col-span-7"
           actions={
@@ -400,11 +221,11 @@ export function SchemaLab({ lab }: { lab: Lab }) {
         >
           {activeQuery ? (
             <>
-              <pre className="overflow-x-auto rounded-lg bg-navy-950/70 p-3 font-mono text-[0.75rem] leading-relaxed text-ink-200">
+              <pre className="pg-scroll overflow-x-auto rounded-lg bg-pg-bg p-3 font-mono text-[0.75rem] leading-relaxed text-pg-text">
                 {activeQuery}
               </pre>
-              {selectedNode.table === "dim_product" ? (
-                <p className="mt-3 text-[0.8125rem] leading-relaxed text-ink-400">
+              {selected === "dim_product" ? (
+                <p className="mt-3 text-[0.8125rem] leading-relaxed text-pg-dim">
                   {snowflake
                     ? "Three joins instead of one, and the category group is now available. That is the snowflake trade-off in a single query."
                     : "One join, and category and brand are right there on the dimension. Redundant in storage, cheap at query time."}
@@ -412,8 +233,9 @@ export function SchemaLab({ lab }: { lab: Lab }) {
               ) : null}
             </>
           ) : (
-            <p className="text-sm text-ink-400">
-              Select a dimension to see the join it participates in.
+            <p className="text-sm text-pg-dim">
+              No worked query for {selected} yet. Open the SQL playground lab and
+              write one against it.
             </p>
           )}
         </Panel>
@@ -430,6 +252,6 @@ export function SchemaLab({ lab }: { lab: Lab }) {
       >
         <ResultTable set={integrity} />
       </Panel>
-    </div>
+    </LabScroll>
   );
 }

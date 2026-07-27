@@ -95,6 +95,11 @@ export default function RootLayout({
       lang="en-IN"
       data-scroll-behavior="smooth"
       className={`${inter.variable} ${mono.variable} h-full antialiased`}
+      // The playground's theme script writes data-pg-theme here during HTML
+      // parsing, ahead of hydration, so the workspace never flashes the wrong
+      // surface. React did not render that attribute and must be told not to
+      // treat it as a mismatch — the DOM is deliberately ahead of the server.
+      suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col bg-[#fffdf8]">
         {/* Scroll reveals start at opacity 0 and are shown by an observer.

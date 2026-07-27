@@ -1,154 +1,166 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
-import { useDb, useQuery } from "@/components/playground/DbProvider";
-import { ResultTable } from "@/components/playground/ResultTable";
-import { TABLE_GROUPS } from "@/content/lab-seed";
+import { useDb } from "@/components/playground/DbProvider";
+import { useDatabaseMap } from "@/components/playground/useDatabaseMap";
+import { SESSION_GROUP, type DbTable } from "@/lib/db-map";
 import { quoteIdent } from "@/lib/sqlite";
 import { cn } from "@/lib/cn";
 
 /**
- * Live Database Explorer.
+ * Compact table picker for a lab's side rail.
  *
- * Row counts and previews are read straight from SQLite on every render and
- * invalidated by the provider's `version`, so a table's count updates the
- * instant another lab's INSERT lands. Nothing here is cached or mocked.
+ * Deliberately not a data browser any more: the full view — columns, keys,
+ * relationships, row previews — lives on the Database map, which has the room
+ * for it. Cramming an expandable result grid into a 300px rail was what forced
+ * the editor off-screen in the first place.
+ *
+ * The list comes from `useDatabaseMap`, so a table created mid-session appears
+ * here under "Created in this session" without anything being registered.
  */
 export function TableExplorer({
   onSelect,
+  onOpenMap,
   className,
 }: {
   /** Called with a ready-made SELECT so a lab can push it into its editor. */
   onSelect?: (sql: string, table: string) => void;
+  /** Jumps to the canvas view. */
+  onOpenMap?: () => void;
   className?: string;
 }) {
   const { status } = useDb();
-  const [open, setOpen] = useState<string | null>("src_sales");
+  const { map } = useDatabaseMap();
+  const [query, setQuery] = useState("");
+
+  const groups = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    const filtered = term
+      ? map.tables.filter(
+          (table) =>
+            table.name.toLowerCase().includes(term) ||
+            table.columns.some((column) =>
+              column.name.toLowerCase().includes(term),
+            ),
+        )
+      : map.tables;
+
+    const byGroup = new Map<string, DbTable[]>();
+    for (const table of filtered) {
+      const list = byGroup.get(table.group) ?? [];
+      list.push(table);
+      byGroup.set(table.group, list);
+    }
+    // Anything the learner made goes first: it is what they are working on.
+    return [...byGroup.entries()].sort(([a], [b]) =>
+      a === SESSION_GROUP ? -1 : b === SESSION_GROUP ? 1 : 0,
+    );
+  }, [map.tables, query]);
+
+  if (status !== "ready") {
+    return (
+      <p className={cn("px-1 py-3 text-xs text-pg-faint", className)}>
+        Waiting for SQLite…
+      </p>
+    );
+  }
 
   return (
-    <div className={cn("space-y-5", className)}>
-      {TABLE_GROUPS.map((group) => (
-        <section key={group.label}>
-          <h3 className="text-eyebrow uppercase text-violet-300">{group.label}</h3>
-          <p className="mt-1.5 text-xs leading-relaxed text-ink-400">{group.hint}</p>
-
-          <ul className="mt-3 space-y-1">
-            {group.tables.map((table) => (
-              <li key={table.name}>
-                <TableRow
-                  name={table.name}
-                  note={table.note}
-                  open={open === table.name}
-                  ready={status === "ready"}
-                  onToggle={() =>
-                    setOpen((current) => (current === table.name ? null : table.name))
-                  }
-                  onSelect={onSelect}
-                />
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
-    </div>
-  );
-}
-
-function TableRow({
-  name,
-  note,
-  open,
-  ready,
-  onToggle,
-  onSelect,
-}: {
-  name: string;
-  note: string;
-  open: boolean;
-  ready: boolean;
-  onToggle: () => void;
-  onSelect?: (sql: string, table: string) => void;
-}) {
-  const countSet = useQuery(
-    ready ? `SELECT COUNT(*) FROM ${quoteIdent(name)};` : null,
-  );
-  const preview = useQuery(
-    open && ready ? `SELECT * FROM ${quoteIdent(name)} LIMIT 50;` : null,
-  );
-
-  const rowCount = Number(countSet?.values[0]?.[0] ?? 0);
-  const selectSql = `SELECT * FROM ${name};`;
-  const panelId = `table-panel-${name}`;
-
-  return (
-    <div
-      className={cn(
-        "overflow-hidden rounded-xl border transition-colors",
-        open ? "border-violet-400/40 bg-white/[0.05]" : "border-white/8 bg-white/[0.02]",
-      )}
-    >
-      <div className="flex items-stretch">
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-expanded={open}
-          aria-controls={panelId}
-          className="flex min-w-0 flex-1 items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-white/[0.04]"
+    <div className={cn("flex min-h-0 flex-col", className)}>
+      <div className="relative shrink-0">
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Filter tables"
+          aria-label="Filter tables"
+          className="h-8 w-full rounded-lg border border-pg-line bg-pg-raised pr-2.5 pl-7.5 text-xs text-pg-text outline-none transition-colors placeholder:text-pg-faint focus:border-pg-primary"
+        />
+        <svg
+          viewBox="0 0 20 20"
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 left-2.5 size-3 -translate-y-1/2 text-pg-faint"
+          fill="none"
         >
-          <svg
-            viewBox="0 0 16 16"
-            aria-hidden="true"
-            className={cn(
-              "size-3 shrink-0 text-ink-400 transition-transform duration-200",
-              open && "rotate-90",
-            )}
-          >
-            <path
-              d="M6 3.5 10.5 8 6 12.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <span className="min-w-0 flex-1">
-            <span className="block truncate font-mono text-[0.8125rem] text-ink-100">
-              {name}
-            </span>
-            <span className="mt-0.5 block truncate text-[0.6875rem] text-ink-400">
-              {note}
-            </span>
-          </span>
-          <span
-            className={cn(
-              "shrink-0 rounded-full px-2 py-0.5 font-mono text-[0.6875rem] tabular-nums",
-              rowCount === 0
-                ? "bg-white/8 text-ink-400"
-                : "bg-violet-500/20 text-violet-100",
-            )}
-          >
-            {rowCount.toLocaleString("en-IN")}
-          </span>
-        </button>
-
-        {onSelect ? (
-          <button
-            type="button"
-            onClick={() => onSelect(selectSql, name)}
-            title={`Load "${selectSql}" into the editor`}
-            className="shrink-0 border-l border-white/8 px-2.5 text-[0.6875rem] font-medium text-ink-400 transition-colors hover:bg-white/[0.06] hover:text-white"
-          >
-            Query
-          </button>
-        ) : null}
+          <circle cx="8.5" cy="8.5" r="5.25" stroke="currentColor" strokeWidth="1.8" />
+          <path
+            d="m12.5 12.5 4 4"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+        </svg>
       </div>
 
-      {open ? (
-        <div id={panelId} className="border-t border-white/8 p-2.5">
-          <ResultTable set={preview} maxRows={50} empty="Loading…" />
-        </div>
+      <div className="pg-scroll mt-2 min-h-0 flex-1 space-y-3 overflow-y-auto">
+        {groups.length === 0 ? (
+          <p className="px-1 py-3 text-xs text-pg-faint">
+            {query.trim()
+              ? `Nothing matches “${query}”.`
+              : "No tables yet. Create one, or press Reset DB to restore the seed."}
+          </p>
+        ) : null}
+
+        {groups.map(([label, tables]) => (
+          <section key={label}>
+            <h3
+              className={cn(
+                "text-[0.625rem] font-semibold tracking-[0.1em] uppercase",
+                label === SESSION_GROUP ? "text-pg-primary" : "text-pg-faint",
+              )}
+            >
+              {label}
+            </h3>
+            <ul className="mt-1 space-y-px">
+              {tables.map((table) => (
+                <li key={table.name}>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onSelect?.(
+                        `SELECT * FROM ${quoteIdent(table.name)};`,
+                        table.name,
+                      )
+                    }
+                    title={table.note ?? `${table.columns.length} columns`}
+                    className="group flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left transition-colors hover:bg-pg-hover"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "size-1.5 shrink-0 rounded-full",
+                        table.rows === 0 ? "bg-pg-line-strong" : "bg-pg-gold",
+                      )}
+                    />
+                    <span className="min-w-0 flex-1 truncate font-mono text-xs text-pg-text">
+                      {table.name}
+                    </span>
+                    {table.kind === "view" ? (
+                      <span className="shrink-0 text-[0.5625rem] tracking-[0.08em] text-pg-iris uppercase">
+                        view
+                      </span>
+                    ) : null}
+                    <span className="shrink-0 font-mono text-[0.625rem] text-pg-faint tabular-nums">
+                      {table.rows.toLocaleString("en-IN")}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+
+      {onOpenMap ? (
+        <button
+          type="button"
+          onClick={onOpenMap}
+          className="mt-2 flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-pg-line py-1.5 text-[0.6875rem] font-medium text-pg-dim transition-colors hover:border-pg-primary hover:text-pg-primary"
+        >
+          Open the database map
+          <span aria-hidden="true">→</span>
+        </button>
       ) : null}
     </div>
   );

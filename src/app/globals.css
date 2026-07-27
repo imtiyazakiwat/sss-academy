@@ -108,6 +108,148 @@
   --animate-marquee: marquee 42s linear infinite;
   --animate-shimmer: shimmer 1.6s var(--ease-in-out-soft) infinite;
   --animate-float: float 7s ease-in-out infinite;
+  --animate-pg-touch: pg-touch 1.1s var(--ease-out-expo) 1;
+  --animate-pg-nudge: pg-nudge 1.4s var(--ease-in-out-soft) 2;
+  --animate-pg-row-in: pg-row-in 0.32s var(--ease-out-expo) both;
+  --animate-pg-fade-in: pg-fade-in 0.24s var(--ease-out-expo) both;
+}
+
+/* ============================================================
+   Playground theme — "Kiln"
+   ============================================================
+   The playground is an application, not a marketing page, so it owns its own
+   semantic surface/accent scale instead of borrowing the parchment sections.
+   No green anywhere: terracotta carries action, gold carries keys and emphasis,
+   iris and sky carry syntax and information, rose carries failure.
+
+   Registered with `@theme inline` so utilities compile to `var(--pg-*)`
+   directly rather than to a :root-resolved copy. That is what lets the whole
+   scale flip by changing one attribute, and it would also let a subtree carry
+   its own theme if a lab ever needs a light diagram inside a dark shell. */
+
+@theme inline {
+  --color-pg-bg: var(--pg-bg);
+  --color-pg-surface: var(--pg-surface);
+  --color-pg-raised: var(--pg-raised);
+  --color-pg-hover: var(--pg-hover);
+  --color-pg-line: var(--pg-line);
+  --color-pg-line-strong: var(--pg-line-strong);
+
+  --color-pg-text: var(--pg-text);
+  --color-pg-dim: var(--pg-dim);
+  --color-pg-faint: var(--pg-faint);
+
+  --color-pg-primary: var(--pg-primary);
+  --color-pg-primary-hover: var(--pg-primary-hover);
+  --color-pg-primary-soft: var(--pg-primary-soft);
+  --color-pg-on-primary: var(--pg-on-primary);
+
+  --color-pg-gold: var(--pg-gold);
+  --color-pg-gold-soft: var(--pg-gold-soft);
+  --color-pg-iris: var(--pg-iris);
+  --color-pg-iris-soft: var(--pg-iris-soft);
+  --color-pg-sky: var(--pg-sky);
+  --color-pg-sky-soft: var(--pg-sky-soft);
+  --color-pg-rose: var(--pg-rose);
+  --color-pg-rose-soft: var(--pg-rose-soft);
+
+  --color-pg-canvas: var(--pg-canvas);
+  --color-pg-node: var(--pg-node);
+  --color-pg-edge: var(--pg-edge);
+  --color-pg-edge-active: var(--pg-edge-active);
+}
+
+/* Dark is also the fallback: any subtree without an explicit theme inherits it. */
+:root,
+[data-pg-theme="dark"] {
+  --pg-bg: #131211;
+  --pg-surface: #1b1917;
+  --pg-raised: #23201d;
+  --pg-hover: #2c2825;
+  --pg-line: rgb(255 255 255 / 0.09);
+  --pg-line-strong: rgb(255 255 255 / 0.2);
+
+  --pg-text: #f4efe7;
+  --pg-dim: #a39b90;
+  --pg-faint: #7c746a;
+
+  --pg-primary: #e06b45;
+  --pg-primary-hover: #ef7d57;
+  --pg-primary-soft: rgb(224 107 69 / 0.16);
+  --pg-on-primary: #1c0e08;
+
+  --pg-gold: #e9be62;
+  --pg-gold-soft: rgb(233 190 98 / 0.15);
+  --pg-iris: #a99bff;
+  --pg-iris-soft: rgb(169 155 255 / 0.16);
+  --pg-sky: #6ec1e4;
+  --pg-sky-soft: rgb(110 193 228 / 0.16);
+  --pg-rose: #f08a8a;
+  --pg-rose-soft: rgb(240 138 138 / 0.16);
+
+  --pg-canvas: #0f0e0d;
+  --pg-node: #1e1b19;
+  --pg-edge: rgb(255 255 255 / 0.16);
+  --pg-edge-active: #e06b45;
+  --pg-grid: rgb(255 255 255 / 0.055);
+
+  /* Syntax — five hues, each distinguishable at 13px on --pg-surface. */
+  --pg-syn-keyword: #a99bff;
+  --pg-syn-type: #6ec1e4;
+  --pg-syn-function: #e9be62;
+  --pg-syn-string: #f0a58a;
+  --pg-syn-number: #9ad4ee;
+  --pg-syn-comment: #6e665e;
+  --pg-syn-operator: #b9b0a5;
+  --pg-syn-identifier: #f4efe7;
+  --pg-syn-punctuation: #8b8377;
+  --pg-caret: #f4efe7;
+  --pg-selection: rgb(169 155 255 / 0.3);
+}
+
+[data-pg-theme="light"] {
+  --pg-bg: #f4eee2;
+  --pg-surface: #fffdf8;
+  --pg-raised: #f8f3e9;
+  --pg-hover: #f0eade;
+  --pg-line: rgb(36 31 26 / 0.12);
+  --pg-line-strong: rgb(36 31 26 / 0.26);
+
+  --pg-text: #241f1a;
+  --pg-dim: #6f675e;
+  --pg-faint: #8b857b;
+
+  --pg-primary: #c2502f;
+  --pg-primary-hover: #a94326;
+  --pg-primary-soft: rgb(194 80 47 / 0.12);
+  --pg-on-primary: #fffaf5;
+
+  --pg-gold: #8a6212;
+  --pg-gold-soft: rgb(138 98 18 / 0.12);
+  --pg-iris: #5142cc;
+  --pg-iris-soft: rgb(81 66 204 / 0.11);
+  --pg-sky: #1a6b93;
+  --pg-sky-soft: rgb(26 107 147 / 0.12);
+  --pg-rose: #b8342a;
+  --pg-rose-soft: rgb(184 52 42 / 0.12);
+
+  --pg-canvas: #efe7d7;
+  --pg-node: #fffdf8;
+  --pg-edge: rgb(36 31 26 / 0.22);
+  --pg-edge-active: #c2502f;
+  --pg-grid: rgb(36 31 26 / 0.07);
+
+  --pg-syn-keyword: #5142cc;
+  --pg-syn-type: #1a6b93;
+  --pg-syn-function: #8a6212;
+  --pg-syn-string: #ad4a22;
+  --pg-syn-number: #1f5f80;
+  --pg-syn-comment: #857d73;
+  --pg-syn-operator: #57534d;
+  --pg-syn-identifier: #241f1a;
+  --pg-syn-punctuation: #8b857b;
+  --pg-caret: #241f1a;
+  --pg-selection: rgb(81 66 204 / 0.18);
 }
 
 @keyframes marquee {
@@ -142,6 +284,55 @@
   }
   100% {
     background-color: rgb(217 93 57 / 0.1);
+  }
+}
+
+/* Playground motion --------------------------------------- */
+
+/* Marks the tables a statement just touched, on the schema map. */
+@keyframes pg-touch {
+  0% {
+    box-shadow: 0 0 0 0 var(--pg-primary-soft);
+    border-color: var(--pg-primary);
+  }
+  70% {
+    box-shadow: 0 0 0 14px transparent;
+    border-color: var(--pg-primary);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* Tells the eye where to go when an example is loaded but not run. */
+@keyframes pg-nudge {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: 0 0 0 5px var(--pg-primary-soft);
+  }
+}
+
+/* Result rows arriving. Cheap: opacity and transform only. */
+@keyframes pg-row-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 4px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pg-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
@@ -278,6 +469,33 @@
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* Thin, theme-aware scrollbars for the playground's many scroll panes. */
+@utility pg-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--pg-line-strong) transparent;
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--pg-line-strong);
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--pg-dim);
+  }
+}
+
+/* The canvas backdrop. Sized in JS so the dots stay put while panning. */
+@utility pg-grid {
+  background-image: radial-gradient(var(--pg-grid) 1px, transparent 1px);
 }
 
 /* ============================================================

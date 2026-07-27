@@ -93,7 +93,7 @@ export const labs: Lab[] = [
     courseSlug: "sql",
     topics: ["SQL fundamentals and query structure"],
     summary:
-      "A real SQLite engine in your browser. Write a query, press Run, watch the rows come back — then open the execution timeline to see how SQLite actually got them.",
+      "A real SQLite engine in your browser. Write a query, press Run, and the rows come back from a real database — then open the database map to see the tables you just read from.",
     minutes: 20,
     points: [
       "Every table in the sidebar is live. Click one to see its rows immediately.",
@@ -291,7 +291,7 @@ SELECT product FROM tgt_sales;`,
       "A CTE is a named result set. Same plan as a derived table, far better readability.",
     ],
     notes: [
-      "Show the correlated version, then the CTE version, then open the execution timeline on both. Same plan, very different code.",
+      "Show the correlated version, then the CTE version. Same rows, very different code — and the second one you can actually read out loud.",
       "This is where students stop writing one enormous query and start naming their steps.",
     ],
     snippets: [

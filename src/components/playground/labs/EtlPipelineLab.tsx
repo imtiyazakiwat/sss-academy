@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useDb, useQuery } from "@/components/playground/DbProvider";
-import { LabIntro, Panel, PillButton, Stat } from "@/components/playground/LabChrome";
+import { LabIntro, LabScroll, Panel, PillButton, Stat } from "@/components/playground/LabChrome";
 import { ResultTable } from "@/components/playground/ResultTable";
 import type { Lab } from "@/content/labs";
 import { cn } from "@/lib/cn";
@@ -246,7 +246,7 @@ export function EtlPipelineLab({ lab }: { lab: Lab }) {
   const progress = Math.round((completed / STAGES.length) * 100);
 
   return (
-    <div className="space-y-5">
+    <LabScroll>
       <LabIntro lab={lab} />
 
       <Panel
@@ -289,7 +289,7 @@ export function EtlPipelineLab({ lab }: { lab: Lab }) {
         }
       >
         <div
-          className="h-1.5 overflow-hidden rounded-full bg-white/8"
+          className="h-1.5 overflow-hidden rounded-full bg-pg-hover"
           role="progressbar"
           aria-valuenow={progress}
           aria-valuemin={0}
@@ -315,32 +315,32 @@ export function EtlPipelineLab({ lab }: { lab: Lab }) {
                   className={cn(
                     "w-full rounded-xl border px-3.5 py-3 text-left transition-colors",
                     index === inspect
-                      ? "border-violet-400/50 bg-violet-500/10"
-                      : "border-white/8 bg-white/[0.02] hover:border-white/20",
+                      ? "border-pg-iris/50 bg-pg-iris-soft"
+                      : "border-pg-line bg-pg-raised hover:border-pg-line-strong",
                   )}
                 >
                   <div className="flex items-center gap-2">
                     <StageDot state={state} />
-                    <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-medium text-white">
+                    <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-medium text-pg-text">
                       {index + 1}. {stage.label}
                     </span>
                     {state === "done" ? (
-                      <span className="shrink-0 font-mono text-[0.625rem] text-mint-100">
+                      <span className="shrink-0 font-mono text-[0.625rem] text-pg-sky">
                         OK
                       </span>
                     ) : null}
                   </div>
 
-                  <p className="mt-1.5 text-[0.6875rem] leading-relaxed text-ink-400">
+                  <p className="mt-1.5 text-[0.6875rem] leading-relaxed text-pg-dim">
                     {stage.detail}
                   </p>
 
-                  <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/8">
+                  <div className="mt-2 h-1 overflow-hidden rounded-full bg-pg-hover">
                     <div
                       className={cn(
                         "h-full rounded-full transition-[width] duration-700 ease-[var(--ease-out-expo)]",
-                        state === "done" && "w-full bg-mint-500",
-                        state === "running" && "w-2/3 bg-ember-500",
+                        state === "done" && "w-full bg-pg-sky",
+                        state === "running" && "w-2/3 bg-pg-rose",
                         state === "pending" && "w-0",
                       )}
                     />
@@ -383,21 +383,21 @@ export function EtlPipelineLab({ lab }: { lab: Lab }) {
           className={cn(
             "rounded-2xl border px-4 py-3.5",
             counts.unexplained === 0
-              ? "border-mint-500/35 bg-mint-500/8"
-              : "border-ember-500/40 bg-ember-500/10",
+              ? "border-pg-sky/40 bg-pg-sky-soft"
+              : "border-pg-rose/45 bg-pg-rose-soft",
           )}
         >
           <p
             className={cn(
               "text-[0.9375rem] font-medium",
-              counts.unexplained === 0 ? "text-mint-100" : "text-ember-100",
+              counts.unexplained === 0 ? "text-pg-sky" : "text-pg-rose",
             )}
           >
             {counts.unexplained === 0
               ? "Reconciled — every extracted row is either loaded or explained by a reject reason."
               : `${counts.unexplained} rows are unaccounted for. That is the defect.`}
           </p>
-          <p className="mt-1 font-mono text-[0.75rem] text-ink-300">
+          <p className="mt-1 font-mono text-[0.75rem] text-pg-dim">
             {counts.extracted} extracted = {counts.loaded} loaded + {counts.rejected}{" "}
             rejected {counts.unexplained === 0 ? "✓" : `+ ${counts.unexplained} missing`}
           </p>
@@ -411,8 +411,8 @@ export function EtlPipelineLab({ lab }: { lab: Lab }) {
         >
           <div className="space-y-2.5">
             {inspected.statements.map((statement, index) => (
-              <div key={index} className="overflow-hidden rounded-xl border border-white/8">
-                <pre className="overflow-x-auto bg-navy-950/70 p-3 font-mono text-[0.75rem] leading-relaxed text-ink-200">
+              <div key={index} className="overflow-hidden rounded-xl border border-pg-line">
+                <pre className="overflow-x-auto bg-pg-bg p-3 font-mono text-[0.75rem] leading-relaxed text-pg-text">
                   {statement}
                 </pre>
               </div>
@@ -445,14 +445,14 @@ export function EtlPipelineLab({ lab }: { lab: Lab }) {
               empty="No rejects."
             />
           ) : (
-            <p className="py-6 text-sm text-ink-400">
+            <p className="py-6 text-sm text-pg-dim">
               Run the job as far as stage 3 and every rejected row shows up here with
               its reason.
             </p>
           )}
         </Panel>
       </div>
-    </div>
+    </LabScroll>
   );
 }
 
@@ -488,9 +488,9 @@ function StageDot({ state }: { state: "pending" | "running" | "done" }) {
       aria-hidden="true"
       className={cn(
         "size-2 shrink-0 rounded-full",
-        state === "done" && "bg-mint-500",
-        state === "running" && "animate-pulse bg-ember-500",
-        state === "pending" && "bg-white/20",
+        state === "done" && "bg-pg-sky",
+        state === "running" && "animate-pulse bg-pg-rose",
+        state === "pending" && "bg-pg-hover",
       )}
     />
   );

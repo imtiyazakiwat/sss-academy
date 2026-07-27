@@ -207,6 +207,40 @@ export function tokenize(sql: string): Token[] {
  * It works on the token stream rather than with regexes, so semicolons and
  * keywords inside string literals and comments are left alone.
  */
+/** Words allowed between `TABLE` and the column list's opening bracket. */
+const TABLE_HEADER_WORDS = new Set([
+  "IF",
+  "NOT",
+  "EXISTS",
+  "TEMP",
+  "TEMPORARY",
+]);
+
+/**
+ * True when the bracket that follows `TABLE` is really a column list.
+ *
+ * Arming the list on sight of `TABLE` alone was too eager: in
+ * `CREATE TABLE t AS SELECT COALESCE(x, 0)` the first bracket belongs to a
+ * function call, and in `ALTER TABLE t ADD COLUMN c INT CHECK (c > 0)` it
+ * belongs to a constraint. Both would have been split across lines as though
+ * they were column definitions. So we look ahead: only a name — optionally
+ * qualified, optionally behind `IF NOT EXISTS` — may sit between `TABLE` and
+ * the bracket.
+ */
+function opensColumnList(words: Token[], tableIndex: number): boolean {
+  for (let i = tableIndex + 1; i < words.length; i += 1) {
+    const word = words[i];
+    if (word.value === "(") return true;
+    if (word.kind === "identifier" || word.kind === "function") continue;
+    if (word.value === ".") continue;
+    if (word.kind === "keyword" && TABLE_HEADER_WORDS.has(word.value.toUpperCase())) {
+      continue;
+    }
+    return false;
+  }
+  return false;
+}
+
 export function formatSql(sql: string): string {
   const tokens = tokenize(sql).filter((token) => token.kind !== "whitespace");
   if (tokens.length === 0) return sql;
@@ -220,6 +254,21 @@ export function formatSql(sql: string): string {
   let out = "";
   let depth = 0;
   let atLineStart = true;
+
+  /**
+   * What each open bracket is for.
+   *
+   *   inline — a function call or a type width: `SUM(amount)`, `VARCHAR(50)`
+   *   block  — a subquery, which gets its own indented lines
+   *   list   — a definition list, which breaks after every comma
+   *
+   * Without the distinction a pasted one-line CREATE TABLE stayed one line
+   * however many times you pressed Format, which is the whole reason anyone
+   * reaches for the formatter after pasting.
+   */
+  const parens: ("inline" | "block" | "list")[] = [];
+  /** Set when a statement header wants its next bracket treated as a list. */
+  let listPending = false;
 
   const indent = () => "  ".repeat(Math.max(depth, 0));
   const newline = () => {
@@ -262,19 +311,38 @@ export function formatSql(sql: string): string {
     }
 
     if (value === "(") {
-      write("(", !atLineStart && !/[(,]$/.test(out.trimEnd()));
-      // Only a subquery gets its own indented block; a function call stays put.
+      // A call or a type width binds tight to the name before it: SUM(amount),
+      // VARCHAR(50). Everything else reads better with a space: VALUES (…).
+      const previous = words[i - 1];
+      // A definition list always takes a space — `CREATE TABLE t (` — even
+      // though the tokeniser sees `t(` and calls it a function.
+      const tight =
+        !listPending &&
+        (previous?.kind === "function" || previous?.kind === "type");
+      write("(", !tight && !atLineStart && !/\($/.test(out.trimEnd()));
+
       const next = words[i + 1];
-      if (next && ["SELECT", "WITH", "VALUES"].includes(next.value.toUpperCase())) {
+      const isSubquery =
+        next && ["SELECT", "WITH", "VALUES"].includes(next.value.toUpperCase());
+
+      if (listPending) {
+        parens.push("list");
+        listPending = false;
         depth += 1;
         newline();
+      } else if (isSubquery) {
+        parens.push("block");
+        depth += 1;
+        newline();
+      } else {
+        parens.push("inline");
       }
       continue;
     }
 
     if (value === ")") {
-      const previousWasBlock = out.trimEnd().endsWith(")") === false && depth > 0;
-      if (previousWasBlock && out.includes("\n")) {
+      // Close on its own line only if this bracket opened one.
+      if (parens.pop() !== "inline") {
         depth = Math.max(depth - 1, 0);
         newline();
       }
@@ -284,6 +352,8 @@ export function formatSql(sql: string): string {
 
     if (value === ";") {
       write(";", false);
+      parens.length = 0;
+      listPending = false;
       if (i < words.length - 1) {
         depth = 0;
         newline();
@@ -294,10 +364,27 @@ export function formatSql(sql: string): string {
 
     if (value === ",") {
       write(",", false);
+      // One column, constraint or tuple per line inside a definition list.
+      if (parens[parens.length - 1] === "list") newline();
       continue;
     }
 
     if (token.kind === "keyword") {
+      // CREATE or ALTER TABLE: the column list breaks one per line. Checked on
+      // TABLE rather than on CREATE so `CREATE TEMP TABLE` and `IF NOT EXISTS`
+      // need no special casing. Index and view brackets stay inline — they are
+      // short by nature.
+      if (
+        value === "TABLE" &&
+        parens.length === 0 &&
+        words
+          .slice(Math.max(0, i - 3), i)
+          .some((word) => ["CREATE", "ALTER"].includes(word.value.toUpperCase())) &&
+        opensColumnList(words, i)
+      ) {
+        listPending = true;
+      }
+
       const major = matchPhrase(i, MAJOR_KEYWORDS);
       if (major) {
         if (out.trim()) newline();
