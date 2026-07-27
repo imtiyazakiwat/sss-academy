@@ -14,7 +14,7 @@ import {
   getCourse,
   relatedCourses,
 } from "@/content/courses";
-import { placementsByPackage } from "@/content/placements";
+import { placements } from "@/content/placements";
 import { contact } from "@/content/site";
 import { breadcrumbSchema, courseSchema } from "@/lib/schema";
 
@@ -50,8 +50,8 @@ export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
   const related = relatedCourses(course.slug);
   const schema = courseSchema(course.slug);
 
-  // Illustrative proof: the top packages, which came through these tracks.
-  const proof = placementsByPackage.slice(0, 3);
+  // A small selection of learner stories from related training tracks.
+  const proof = placements.slice(0, 3);
 
   return (
     <>
@@ -131,28 +131,23 @@ export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
                 <div className="rounded-2xl border border-ink-200 bg-white p-6 shadow-card">
                   <Eyebrow>Where this leads</Eyebrow>
                   <p className="mt-4 text-sm leading-relaxed text-ink-600">
-                    Students from our data and testing tracks have been placed at
-                    multinationals on packages up to ₹
-                    {placementsByPackage[0].packageLpa.toFixed(2)} LPA.
+                    Learners from our data and testing tracks describe the same
+                    foundations: practical work, clear explanations and focused
+                    interview preparation.
                   </p>
 
                   <ul className="mt-5 space-y-3">
                     {proof.map((p) => (
                       <li
                         key={p.slug}
-                        className="flex items-center justify-between gap-4 border-t border-ink-100 pt-3 first:border-t-0 first:pt-0"
+                        className="border-t border-ink-100 pt-3 first:border-t-0 first:pt-0"
                       >
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-navy-950">
-                            {p.name}
-                          </p>
-                          <p className="truncate text-xs text-ink-500">
-                            {p.role}
-                          </p>
-                        </div>
-                        <span className="shrink-0 font-mono text-xs font-medium text-ember-600">
-                          {p.packageLpa.toFixed(2)} LPA
-                        </span>
+                        <p className="truncate text-sm font-medium text-navy-950">
+                          {p.name}
+                        </p>
+                        <p className="truncate text-xs text-ink-500">
+                          {p.role}
+                        </p>
                       </li>
                     ))}
                   </ul>
@@ -198,7 +193,7 @@ export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
             </Reveal>
 
             <Reveal delay={100} className="lg:col-span-7">
-              <div className="rounded-2xl border border-ink-200 bg-white p-6 shadow-card sm:p-8">
+              <div className="border-t-4 border-navy-900 bg-[#fffdf8] p-6 shadow-[10px_10px_0_0_#e3ede5] sm:p-8">
                 <EnquiryForm defaultCourse={course.slug} />
               </div>
             </Reveal>

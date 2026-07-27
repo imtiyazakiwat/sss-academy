@@ -36,15 +36,16 @@ export default function CoursesPage() {
   return (
     <>
       <PageHero
+        variant="catalogue"
         eyebrow="Courses"
         title="Eleven tracks. One outcome: you can do the job."
-        description="Each course runs between one and three months, ends in real-time project work, and includes interview preparation. Not sure where to start? SQL first, then ETL Testing, is the path most of our placed students took."
+        description="Each course runs between one and three months, ends in real-time project work, and includes interview preparation. Not sure where to start? SQL first, then ETL Testing, is a path many of our learners followed."
         breadcrumb={[{ name: "Courses", href: "/courses" }]}
         aside={
-          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10">
+          <dl className="grid grid-cols-2 gap-px overflow-hidden border border-navy-900/15 bg-navy-900/15 shadow-[8px_8px_0_0_#e7b94d]">
             <Fact value={`${courses.length}`} label="Courses offered" />
             <Fact value="1–3" label="Months per track" />
-            <Fact value="1000+" label="Students placed" />
+            <Fact value="1000+" label="Learners supported" />
             <Fact value="26+" label="Years of experience" />
           </dl>
         }
@@ -94,9 +95,9 @@ export default function CoursesPage() {
 
 function Fact({ value, label }: { value: string; label: string }) {
   return (
-    <div className="bg-navy-950/70 px-5 py-4 backdrop-blur">
-      <dt className="text-eyebrow uppercase text-navy-400">{label}</dt>
-      <dd className="mt-1.5 text-2xl font-semibold tracking-[-0.03em] text-white">
+    <div className="bg-[#fffdf8] px-5 py-5">
+      <dt className="text-[0.625rem] font-semibold tracking-[0.13em] text-ink-500 uppercase">{label}</dt>
+      <dd className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-navy-900">
         {value}
       </dd>
     </div>

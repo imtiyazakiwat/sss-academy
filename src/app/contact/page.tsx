@@ -19,6 +19,7 @@ export default function ContactPage() {
   return (
     <>
       <PageHero
+        variant="contact"
         eyebrow="Contact"
         title="Let's work out where you should start"
         description="Send an enquiry or call us directly. Counselling is free, and we'll give you a straight answer about which track fits your background."
@@ -30,14 +31,18 @@ export default function ContactPage() {
           <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
             {/* Form leads on mobile — it's the primary action on this page */}
             <Reveal className="lg:col-span-7">
-              <div className="rounded-2xl border border-ink-200 bg-white p-6 shadow-card sm:p-8">
-                <Eyebrow>Send us a message</Eyebrow>
-                <h2 className="text-title mt-3 text-navy-950">
-                  Tell us what you&apos;re aiming for
-                </h2>
-                <p className="mt-2 text-sm text-ink-500">
-                  We usually respond within one working day.
-                </p>
+              <div className="border-t-4 border-navy-900 bg-[#fffdf8] p-6 shadow-[10px_10px_0_0_#e3ede5] sm:p-8">
+                <div className="flex flex-wrap items-end justify-between gap-4 border-b border-ink-200 pb-6">
+                  <div>
+                    <Eyebrow>Start a conversation</Eyebrow>
+                    <h2 className="text-title mt-3 text-navy-950">
+                      Tell us where you want to go
+                    </h2>
+                  </div>
+                  <p className="max-w-44 text-right text-xs leading-5 text-ink-500">
+                    A real person usually replies within one working day.
+                  </p>
+                </div>
                 <div className="mt-7">
                   <EnquiryForm />
                 </div>

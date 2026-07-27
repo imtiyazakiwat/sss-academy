@@ -23,6 +23,7 @@ export default function AboutPage() {
   return (
     <>
       <PageHero
+        variant="editorial"
         eyebrow="About"
         title="Building careers through quality IT training"
         description="Founded to close the distance between what colleges teach and what employers actually test for."

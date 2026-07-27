@@ -40,12 +40,13 @@ export default function PlaygroundHubPage() {
   return (
     <>
       <PageHero
+        variant="lab"
         eyebrow="Practice lab"
         title="Stop reading about SQL. Run it."
         description="A real SQLite database, seeded with a warehouse and a deliberately dirty ETL feed, running entirely in your browser. Write a query and see rows. Run an ETL job and watch rows get rejected. Change a customer's city and watch history get written."
         breadcrumb={[{ name: "Playground", href: "/playground" }]}
         aside={
-          <div className="rounded-2xl border border-white/12 bg-white/[0.06] p-6 backdrop-blur">
+          <div className="border border-navy-900/15 bg-[#fffdf8] p-6 shadow-[8px_8px_0_0_#e7b94d]">
             <dl className="grid grid-cols-2 gap-5">
               <Metric value={labs.length} label="Labs" />
               <Metric value={ALL_TABLES.length} label="Live tables" />
@@ -57,11 +58,11 @@ export default function PlaygroundHubPage() {
                 Open the SQL playground
                 <ArrowIcon />
               </ButtonLink>
-              <ButtonLink href="/courses" variant="onDark" size="md">
+              <ButtonLink href="/courses" variant="ghost" size="md">
                 See the full syllabus
               </ButtonLink>
             </div>
-            <p className="mt-4 text-xs leading-relaxed text-navy-300">
+            <p className="mt-4 border-t border-ink-200 pt-4 text-xs leading-relaxed text-ink-600">
               Nothing is installed and nothing is uploaded. The database is created
               in your browser and reset with one click.
             </p>
@@ -236,9 +237,9 @@ export default function PlaygroundHubPage() {
 
 function Metric({ value, label }: { value: number; label: string }) {
   return (
-    <div>
-      <dt className="text-xs text-navy-400">{label}</dt>
-      <dd className="mt-0.5 font-mono text-2xl font-medium text-white tabular-nums">
+    <div className="border-l border-ink-200 pl-3 first:border-l-0 first:pl-0">
+      <dt className="text-xs text-ink-500">{label}</dt>
+      <dd className="mt-1 font-mono text-2xl font-semibold text-navy-900 tabular-nums">
         {value}
       </dd>
     </div>

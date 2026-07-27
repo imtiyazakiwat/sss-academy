@@ -1,22 +1,21 @@
 import { CountUp } from "@/components/motion/CountUp";
 import { Reveal } from "@/components/motion/Reveal";
 import { courses } from "@/content/courses";
-import { highestPackage, placements } from "@/content/placements";
+import { placements } from "@/content/placements";
 
 /**
  * Overlapping stats card, lifted over the hero's lower edge.
  *
- * Every figure here is one the institute actually published: 1000+ placed and
- * 26+ years came from the legacy site, the course count is the real catalogue
- * size, and the highest package is the maximum across the 23 published
- * placement records. No invented placement rate or hiring-partner count.
+ * Every figure here is one the institute actually published: learner reach and
+ * experience come from the legacy site, while course and story counts are
+ * derived directly from the current content catalogue.
  */
 const items = [
   {
     tint: "violet" as const,
     value: <CountUp value={1000} suffix="+" />,
-    label: "Students Placed",
-    sub: "And growing",
+    label: "Learners Supported",
+    sub: "Across career journeys",
     icon: (
       <path
         d="M7 10a2.6 2.6 0 1 0 0-5.2A2.6 2.6 0 0 0 7 10Zm0 1.6c-2.6 0-4.6 1.3-4.6 2.9v1.1h9.2v-1.1c0-1.6-2-2.9-4.6-2.9ZM14.4 9.6a2.1 2.1 0 1 0 0-4.2M15 11.7c1.7.2 3 1.3 3 2.6v1.3h-3.2"
@@ -47,12 +46,12 @@ const items = [
   {
     tint: "mint" as const,
     highlight: true,
-    value: <>₹{highestPackage.toFixed(0)} LPA</>,
-    label: "Highest Package",
-    sub: `Across ${placements.length} published stories`,
+    value: <CountUp value={placements.length} />,
+    label: "Learner Stories",
+    sub: "Shared in their words",
     icon: (
       <path
-        d="M3 15.5h14M4.6 15.5V9.8M8.7 15.5V6.6M12.8 15.5v-4M16.2 5l-3.4 3.4-2.6-2L5.6 10"
+        d="M4 4.5h12v8H9l-3.5 3v-3H4v-8Zm3 3h6M7 10h4"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.4"
