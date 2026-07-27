@@ -45,7 +45,7 @@ export function Footer() {
             <p className="text-title text-[#1F1E1D]">SSS Academy</p>
             <p
               className="text-eyebrow mt-1 uppercase"
-              style={{ color: "#D97757" }}
+              style={{ color: "#B5522E" }}
             >
               {site.tagline}
             </p>
@@ -63,7 +63,7 @@ export function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={s.label}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[#E8E6DE] bg-[#FAF9F5] text-[#6B6A67] transition-colors hover:border-[#D97757]/40 hover:bg-[#FAF9F5] hover:text-[#D97757]"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[#E8E6DE] bg-[#FAF9F5] text-[#6B6A67] transition-colors hover:border-[#B5522E]/40 hover:bg-[#FAF9F5] hover:text-[#B5522E]"
                   >
                     {socialIcons[s.label]}
                   </a>
@@ -85,7 +85,7 @@ export function Footer() {
                 <Link
                   href="/courses"
                   className="text-sm font-medium transition-colors"
-                  style={{ color: "#D97757" }}
+                  style={{ color: "#B5522E" }}
                 >
                   All {courses.length} courses →
                 </Link>
@@ -125,7 +125,7 @@ export function Footer() {
                 <p key={phone}>
                   <a
                     href={`tel:${contact.phoneHrefs[i]}`}
-                    className="text-[#6B6A67] transition-colors hover:text-[#D97757]"
+                    className="text-[#6B6A67] transition-colors hover:text-[#B5522E]"
                   >
                     {phone}
                   </a>
@@ -134,7 +134,7 @@ export function Footer() {
               <p>
                 <a
                   href={`mailto:${contact.email}`}
-                  className="text-[#6B6A67] transition-colors hover:text-[#D97757]"
+                  className="text-[#6B6A67] transition-colors hover:text-[#B5522E]"
                 >
                   {contact.email}
                 </a>
@@ -158,7 +158,7 @@ export function Footer() {
 
 function FooterHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-eyebrow uppercase tracking-wider text-[#1F1E1D]/40">
+    <h2 className="text-eyebrow uppercase tracking-wider text-[#6B6A67]">
       {children}
     </h2>
   );
@@ -174,7 +174,7 @@ function FooterLink({
   return (
     <Link
       href={href}
-      className="text-sm text-[#6B6A67] transition-colors hover:text-[#D97757]"
+      className="text-sm text-[#6B6A67] transition-colors hover:text-[#B5522E]"
     >
       {children}
     </Link>
