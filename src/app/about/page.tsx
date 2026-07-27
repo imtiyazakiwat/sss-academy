@@ -5,7 +5,6 @@ import { JsonLd } from "@/components/JsonLd";
 import { CountUp } from "@/components/motion/CountUp";
 import { Parallax } from "@/components/motion/Parallax";
 import { Reveal } from "@/components/motion/Reveal";
-import { CtaBand } from "@/components/site/CtaBand";
 import { FounderBlock } from "@/components/site/FounderBlock";
 import { PageHero } from "@/components/site/PageHero";
 import { Container, Eyebrow, Section } from "@/components/ui/Section";
@@ -30,80 +29,131 @@ export default function AboutPage() {
         breadcrumb={[{ name: "About", href: "/about" }]}
       />
 
-      <Section className="py-16 sm:py-24">
-        <Container>
-          <div className="grid gap-14 lg:grid-cols-12 lg:gap-16">
-            <div className="lg:col-span-7">
-              <Reveal>
-                <Eyebrow>{story.eyebrow}</Eyebrow>
-                <h2 className="text-headline mt-4 text-navy-950">
-                  {story.heading}
-                </h2>
-              </Reveal>
+      <Section className="overflow-hidden pt-16 pb-0 sm:pt-24 sm:pb-0">
+        <div
+          aria-hidden="true"
+          className="absolute -top-32 right-0 h-96 w-96 rounded-full bg-violet-100/60 blur-3xl"
+        />
+        <Container className="relative">
+          <Reveal className="text-center">
+            <Eyebrow className="justify-center">{story.eyebrow}</Eyebrow>
+            <h2 className="text-title mx-auto mt-4 max-w-4xl text-navy-950 sm:text-headline">
+              {story.heading}
+            </h2>
+          </Reveal>
 
-              <div className="mt-7 space-y-5">
-                {story.paragraphs.map((paragraph, i) => (
-                  <Reveal key={i} delay={i * 70}>
-                    <p className="leading-relaxed text-ink-600">{paragraph}</p>
-                  </Reveal>
-                ))}
-              </div>
-            </div>
-
-            <Reveal direction="left" delay={120} className="lg:col-span-5">
+          <div className="mt-12 grid items-start gap-12 lg:grid-cols-12 lg:gap-12">
+            <Reveal className="lg:col-span-6" scale={0.98}>
               <div className="relative">
                 <Parallax speed={0.05}>
                   <div
                     aria-hidden="true"
-                    className="absolute -right-4 -bottom-4 h-full w-full rounded-2xl border border-navy-200 bg-navy-50"
+                    className="absolute -right-4 -bottom-4 h-full w-full rounded-3xl border border-navy-200 bg-navy-50"
                   />
                 </Parallax>
-                <div className="relative overflow-hidden rounded-2xl">
+                <figure className="relative overflow-hidden rounded-3xl bg-navy-950 shadow-subtle">
                   <Image
                     src="/img/classroom.webp"
                     alt="A training session in progress at SSS Academy"
                     width={1600}
                     height={800}
-                    sizes="(max-width: 1024px) 90vw, 460px"
-                    className="h-full w-full object-cover"
+                    sizes="(max-width: 1024px) 90vw, 540px"
+                    className="aspect-[4/5] w-full object-cover"
                   />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gradient-to-t from-navy-950 via-transparent to-transparent"
+                  />
+                  <figcaption className="absolute inset-x-0 bottom-0 p-6 text-sm leading-relaxed text-white/80 sm:p-8">
+                    <span className="mb-2 block text-eyebrow uppercase text-violet-300">
+                      Practical by design
+                    </span>
+                    Learning shaped by real projects, real interviews and more
+                    than two decades of industry experience.
+                  </figcaption>
+                </figure>
+
+                <div className="mt-5 rounded-3xl border border-navy-200 bg-white p-5 shadow-subtle sm:p-6">
+                  <Eyebrow>Our achievements</Eyebrow>
+                  <dl className="mt-5 grid grid-cols-3 divide-x divide-ink-200">
+                    {stats.map((stat) => (
+                      <div key={stat.label} className="px-2 first:pl-0 last:pr-0 sm:px-4">
+                        <dt className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:text-xs">
+                          {stat.label}
+                        </dt>
+                        <dd className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-navy-950 sm:text-3xl">
+                          <CountUp value={stat.value} suffix={stat.suffix} />
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
                 </div>
               </div>
             </Reveal>
+
+            <div className="lg:col-span-6">
+              <ol className="divide-y divide-ink-200 border-y border-ink-200">
+                {story.paragraphs.map((paragraph, i) => (
+                  <Reveal key={i} delay={i * 80}>
+                    <li className="grid gap-4 py-7 sm:grid-cols-[3rem_1fr] sm:gap-6 sm:py-8">
+                      <span
+                        aria-hidden="true"
+                        className="flex h-10 w-10 items-center justify-center rounded-full bg-navy-50 text-sm font-semibold text-navy-700"
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <p
+                        className={`text-sm leading-relaxed sm:text-[0.95rem] ${
+                          i === 0 ? "text-navy-950" : "text-ink-600"
+                        }`}
+                      >
+                        {paragraph}
+                      </p>
+                    </li>
+                  </Reveal>
+                ))}
+              </ol>
+
+              <Reveal delay={260}>
+                <div className="mt-8 grid overflow-hidden rounded-2xl border border-navy-200 bg-navy-50 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+                  <div className="p-5 sm:p-6">
+                    <span className="text-eyebrow uppercase text-ink-500">
+                      The starting point
+                    </span>
+                    <p className="mt-2 font-semibold text-navy-950">
+                      Academic theory
+                    </p>
+                  </div>
+                  <span
+                    aria-hidden="true"
+                    className="mx-5 h-px bg-navy-200 text-center text-navy-500 sm:mx-0 sm:h-auto sm:bg-transparent"
+                  >
+                    →
+                  </span>
+                  <div className="p-5 sm:p-6">
+                    <span className="text-eyebrow uppercase text-violet-600">
+                      The outcome
+                    </span>
+                    <p className="mt-2 font-semibold text-navy-950">
+                      Job-ready confidence
+                    </p>
+                  </div>
+                </div>
+              </Reveal>
+            </div>
           </div>
         </Container>
       </Section>
 
-      <Section tone="dark" className="py-16 sm:py-20">
-        <div
-          aria-hidden="true"
-          className="grid-lines-dark pointer-events-none absolute inset-0 opacity-60"
-        />
-        <Container className="relative">
-          <Reveal>
-            <Eyebrow tone="dark">Our achievements</Eyebrow>
-          </Reveal>
-          <dl className="mt-8 grid gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:grid-cols-3">
-            {stats.map((stat, i) => (
-              <Reveal
-                key={stat.label}
-                delay={i * 90}
-                className="bg-navy-950/80 px-7 py-8"
-              >
-                <dt className="text-eyebrow uppercase text-navy-400">
-                  {stat.label}
-                </dt>
-                <dd className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">
-                  <CountUp value={stat.value} suffix={stat.suffix} />
-                </dd>
-              </Reveal>
-            ))}
-          </dl>
-        </Container>
-      </Section>
-
-      <Section className="py-16 sm:py-24">
+      <Section className="pt-10 pb-16 sm:pt-12 sm:pb-24">
         <Container>
+          <Reveal className="mb-10 text-center">
+            <Eyebrow className="justify-center">What guides us</Eyebrow>
+            <h2 className="text-title mx-auto mt-4 max-w-2xl text-navy-950">
+              A shared direction for every student we train
+            </h2>
+          </Reveal>
+
           <div className="grid gap-5 md:grid-cols-2">
             {[vision, mission].map((item, i) => (
               <Reveal key={item.title} delay={i * 100} scale={0.98}>
@@ -126,12 +176,6 @@ export default function AboutPage() {
       </Section>
 
       <FounderBlock tone="muted" />
-
-      <CtaBand
-        eyebrow="Start here"
-        title="Start your IT career today"
-        body="Join SSS Academy and become industry-ready. Book a free counselling call and we'll tell you honestly where you stand and what it will take."
-      />
 
       <JsonLd data={breadcrumbSchema([{ name: "About", href: "/about" }])} />
     </>
