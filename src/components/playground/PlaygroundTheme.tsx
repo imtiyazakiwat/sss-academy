@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useSyncExternalStore, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 
 export type PgTheme = "dark" | "light";
 
@@ -113,11 +119,24 @@ export function usePgTheme(): {
 }
 
 /**
- * Re-asserts the stored preference on mount. Writing to the DOM is the whole
- * job here — there is no state to set, which is why this is a plain effect.
+ * On the server there is no layout phase, and calling useLayoutEffect there logs
+ * a warning for every render of this client component. The behaviour we want
+ * only exists in the browser, so pick the hook per environment — the standard
+ * isomorphic-layout-effect idiom.
+ */
+const useApplyTheme = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+/**
+ * Re-asserts the stored preference on mount. Writing to the DOM is the whole job
+ * here — there is no state to set.
+ *
+ * It runs before paint because the inline script only executes on a full
+ * document load: arrive at the playground by client-side navigation from, say,
+ * the courses page and the attribute is not set yet, so a `light` reader would
+ * otherwise catch a frame of the dark fallback.
  */
 export function PlaygroundThemeProvider({ children }: { children: ReactNode }) {
-  useEffect(() => {
+  useApplyTheme(() => {
     apply(preferred());
   }, []);
 

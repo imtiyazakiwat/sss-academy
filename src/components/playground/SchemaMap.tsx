@@ -29,6 +29,7 @@ import {
   type DbTable,
   type LaidOutTable,
 } from "@/lib/db-map";
+import { quoteIdent } from "@/lib/sqlite";
 import { cn } from "@/lib/cn";
 
 const POSITION_KEY = "sss-pg-map-positions";
@@ -85,13 +86,21 @@ const EDGE_STYLE: Record<
   flow: { stroke: "var(--pg-sky)", dash: "2 6", label: "ETL lineage" },
 };
 
-/** Tables named anywhere in a statement — good enough to light up what it touched. */
+/**
+ * Tables named anywhere in a statement — good enough to light up what it touched.
+ *
+ * The name is escaped because it comes from `sqlite_master`, not from us: a
+ * learner can legally write `CREATE TABLE "sales(2024)" (…)`, and dropping that
+ * straight into a pattern would throw a SyntaxError inside a memo and take the
+ * whole map down with it.
+ */
 function tablesInSql(sql: string | null, names: string[]): Set<string> {
   if (!sql) return new Set();
   const lowered = sql.toLowerCase();
   const hits = new Set<string>();
   for (const name of names) {
-    if (new RegExp(`\\b${name.toLowerCase()}\\b`).test(lowered)) hits.add(name);
+    const pattern = name.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    if (new RegExp(`\\b${pattern}\\b`).test(lowered)) hits.add(name);
   }
   return hits;
 }
@@ -646,7 +655,7 @@ function TableCard({
               <button
                 type="button"
                 onClick={() =>
-                  onQuery(`SELECT * FROM ${node.name};`, node.name)
+                  onQuery(`SELECT * FROM ${quoteIdent(node.name)};`, node.name)
                 }
                 className="rounded bg-pg-primary px-2 py-0.5 text-[0.625rem] font-medium text-pg-on-primary transition-colors hover:bg-pg-primary-hover"
               >

@@ -111,8 +111,11 @@ export function useResizable({
   const commit = useCallback(
     (next: number) => {
       const bounded = clamp(next, min, resolveMax());
-      setLive(bounded);
       writeStoredSize(storageKey, bounded);
+      // Hand ownership back to storage. Holding on to `live` would pin the pane
+      // to its last local value and quietly deafen it to the storage event, so
+      // another tab could never move it again.
+      setLive(null);
     },
     [min, resolveMax, storageKey],
   );
@@ -152,7 +155,10 @@ export function useResizable({
       if (event.currentTarget.hasPointerCapture(event.pointerId)) {
         event.currentTarget.releasePointerCapture(event.pointerId);
       }
-      if (dragging) writeStoredSize(storageKey, size);
+      if (dragging) {
+        writeStoredSize(storageKey, size);
+        setLive(null);
+      }
       setDragging(false);
     },
     [dragging, size, storageKey],

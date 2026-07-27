@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useDb } from "@/components/playground/DbProvider";
 import { useDatabaseMap } from "@/components/playground/useDatabaseMap";
 import { SESSION_GROUP, type DbTable } from "@/lib/db-map";
+import { quoteIdent } from "@/lib/sqlite";
 import { cn } from "@/lib/cn";
 
 /**
@@ -95,7 +96,9 @@ export function TableExplorer({
       <div className="pg-scroll mt-2 min-h-0 flex-1 space-y-3 overflow-y-auto">
         {groups.length === 0 ? (
           <p className="px-1 py-3 text-xs text-pg-faint">
-            Nothing matches “{query}”.
+            {query.trim()
+              ? `Nothing matches “${query}”.`
+              : "No tables yet. Create one, or press Reset DB to restore the seed."}
           </p>
         ) : null}
 
@@ -115,7 +118,10 @@ export function TableExplorer({
                   <button
                     type="button"
                     onClick={() =>
-                      onSelect?.(`SELECT * FROM ${table.name};`, table.name)
+                      onSelect?.(
+                        `SELECT * FROM ${quoteIdent(table.name)};`,
+                        table.name,
+                      )
                     }
                     title={table.note ?? `${table.columns.length} columns`}
                     className="group flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left transition-colors hover:bg-pg-hover"

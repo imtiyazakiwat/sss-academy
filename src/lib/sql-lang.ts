@@ -207,6 +207,40 @@ export function tokenize(sql: string): Token[] {
  * It works on the token stream rather than with regexes, so semicolons and
  * keywords inside string literals and comments are left alone.
  */
+/** Words allowed between `TABLE` and the column list's opening bracket. */
+const TABLE_HEADER_WORDS = new Set([
+  "IF",
+  "NOT",
+  "EXISTS",
+  "TEMP",
+  "TEMPORARY",
+]);
+
+/**
+ * True when the bracket that follows `TABLE` is really a column list.
+ *
+ * Arming the list on sight of `TABLE` alone was too eager: in
+ * `CREATE TABLE t AS SELECT COALESCE(x, 0)` the first bracket belongs to a
+ * function call, and in `ALTER TABLE t ADD COLUMN c INT CHECK (c > 0)` it
+ * belongs to a constraint. Both would have been split across lines as though
+ * they were column definitions. So we look ahead: only a name — optionally
+ * qualified, optionally behind `IF NOT EXISTS` — may sit between `TABLE` and
+ * the bracket.
+ */
+function opensColumnList(words: Token[], tableIndex: number): boolean {
+  for (let i = tableIndex + 1; i < words.length; i += 1) {
+    const word = words[i];
+    if (word.value === "(") return true;
+    if (word.kind === "identifier" || word.kind === "function") continue;
+    if (word.value === ".") continue;
+    if (word.kind === "keyword" && TABLE_HEADER_WORDS.has(word.value.toUpperCase())) {
+      continue;
+    }
+    return false;
+  }
+  return false;
+}
+
 export function formatSql(sql: string): string {
   const tokens = tokenize(sql).filter((token) => token.kind !== "whitespace");
   if (tokens.length === 0) return sql;
@@ -336,16 +370,17 @@ export function formatSql(sql: string): string {
     }
 
     if (token.kind === "keyword") {
-      // CREATE or ALTER TABLE: the next top-level bracket is a column list, so
-      // it breaks one per line. Checked on TABLE rather than on CREATE so that
-      // `CREATE TEMP TABLE` and `IF NOT EXISTS` need no special casing. Index
-      // and view brackets are left inline — they are short by nature.
+      // CREATE or ALTER TABLE: the column list breaks one per line. Checked on
+      // TABLE rather than on CREATE so `CREATE TEMP TABLE` and `IF NOT EXISTS`
+      // need no special casing. Index and view brackets stay inline — they are
+      // short by nature.
       if (
         value === "TABLE" &&
         parens.length === 0 &&
         words
           .slice(Math.max(0, i - 3), i)
-          .some((word) => ["CREATE", "ALTER"].includes(word.value.toUpperCase()))
+          .some((word) => ["CREATE", "ALTER"].includes(word.value.toUpperCase())) &&
+        opensColumnList(words, i)
       ) {
         listPending = true;
       }

@@ -170,18 +170,31 @@ export function readDatabaseMap(): DatabaseMap {
 
   const byName = new Map(tables.map((table) => [table.name, table]));
 
-  // Primary keys, for inferring the joins nobody declared.
-  const primaryKeys = new Map<string, string>();
+  /**
+   * Single-column primary keys, for inferring the joins nobody declared.
+   *
+   * Keyed column name → every table claiming it, because two tables can both
+   * call their key `customer_id`. Where that happens the name cannot identify a
+   * target, so no edge is drawn: a map that guesses wrong is worse than one that
+   * admits it does not know. Composite keys are skipped for the same reason —
+   * one column of a two-column key does not identify a row.
+   */
+  const primaryKeys = new Map<string, Set<string>>();
   for (const table of tables) {
-    const pk = table.columns.find((column) => column.pk);
-    if (pk) primaryKeys.set(pk.name, table.name);
+    const pks = table.columns.filter((column) => column.pk);
+    if (pks.length !== 1) continue;
+    const owners = primaryKeys.get(pks[0].name) ?? new Set<string>();
+    owners.add(table.name);
+    primaryKeys.set(pks[0].name, owners);
   }
 
   for (const table of tables) {
     for (const column of table.columns) {
       if (column.pk || column.references) continue;
-      const owner = primaryKeys.get(column.name);
-      if (!owner || owner === table.name) continue;
+      const owners = primaryKeys.get(column.name);
+      if (!owners || owners.size !== 1) continue;
+      const owner = [...owners][0];
+      if (owner === table.name) continue;
       if (declaredPairs.has(`${table.name}>${owner}`)) continue;
       // Only key-shaped names, so a shared `city` never becomes a relationship.
       if (!/_(id|key)$/i.test(column.name)) continue;

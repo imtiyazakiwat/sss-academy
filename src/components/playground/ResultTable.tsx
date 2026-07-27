@@ -134,15 +134,28 @@ export function ResultTable({
                   className={cn(
                     "border-b border-pg-line/60 transition-colors last:border-b-0",
                     flag ? ROW_FLAG[flag] : "hover:bg-pg-hover",
-                    animate &&
-                      flag === "bad" &&
-                      "animate-[pulse-bad_1.4s_ease-out_2]",
                   )}
-                  // Staggered only over the first screenful; past that it is noise.
+                  /*
+                   * Both animations are composed into the one shorthand. Setting
+                   * the entry animation inline while the pulse came from a class
+                   * meant inline won and the failing rows in the first screenful
+                   * — the ones anybody actually looks at — never pulsed.
+                   *
+                   * The entry stagger is capped at the first screenful; past
+                   * that it is noise.
+                   */
                   style={
-                    animate && rowIndex < 14
+                    animate
                       ? {
-                          animation: `pg-row-in 0.32s var(--ease-out-expo) ${rowIndex * 18}ms both`,
+                          animation:
+                            [
+                              rowIndex < 14
+                                ? `pg-row-in 0.32s var(--ease-out-expo) ${rowIndex * 18}ms both`
+                                : null,
+                              flag === "bad" ? "pulse-bad 1.4s ease-out 2" : null,
+                            ]
+                              .filter(Boolean)
+                              .join(", ") || undefined,
                         }
                       : undefined
                   }

@@ -120,6 +120,9 @@ export function PlaygroundShell({
 
   const peek = useCallback(
     (table: string) => {
+      // The store can switch the dock's tab but not open it, so a peek with the
+      // dock collapsed would run and show nothing at all.
+      setDockOpen(true);
       run(`SELECT * FROM ${quoteIdent(table)} LIMIT 50;`, {
         label: `Peek ${table}`,
       });
