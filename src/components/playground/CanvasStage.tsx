@@ -95,26 +95,6 @@ export function CanvasStage({
   const [spaceHeld, setSpaceHeld] = useState(false);
   const panOrigin = useRef({ x: 0, y: 0, vx: 0, vy: 0 });
 
-  /**
-   * The authoritative transform, mirrored out of state.
-   *
-   * Gestures need the current value synchronously — a wheel burst delivers
-   * several events before React re-renders — and the alternative, computing
-   * inside a `setViewport(current => …)` updater, is what previously let the
-   * parent's `onViewportChange` fire during render: React runs updaters while
-   * rendering, so notifying from inside one is a setState in another component's
-   * render pass. The ref keeps the maths synchronous and the notification in the
-   * event handler where it belongs.
-   */
-  const current = useRef<Viewport>({ z: 1, x: 0, y: 0 });
-
-  // Held in a ref so the wheel listener does not resubscribe whenever the
-  // parent passes a fresh inline callback.
-  const report = useRef(onViewportChange);
-  useEffect(() => {
-    report.current = onViewportChange;
-  }, [onViewportChange]);
-
   const frameSize = useCallback((): FrameSize => {
     const frame = frameRef.current;
     return {
@@ -125,11 +105,10 @@ export function CanvasStage({
 
   const update = useCallback(
     (next: Viewport) => {
-      current.current = next;
       setViewport(next);
-      report.current?.(next, frameSize());
+      onViewportChange?.(next, frameSize());
     },
-    [frameSize],
+    [frameSize, onViewportChange],
   );
 
   const fit = useCallback(
@@ -168,19 +147,21 @@ export function CanvasStage({
       const px = (clientX ?? rect.left + rect.width / 2) - rect.left;
       const py = (clientY ?? rect.top + rect.height / 2) - rect.top;
 
-      const from = current.current;
-      const z = clampZoom(from.z * factor);
-      if (z === from.z) return;
-
-      // Keep the canvas point under the cursor fixed while the scale changes.
-      const ratio = z / from.z;
-      update({
-        z,
-        x: px - (px - from.x) * ratio,
-        y: py - (py - from.y) * ratio,
+      setViewport((current) => {
+        const z = clampZoom(current.z * factor);
+        if (z === current.z) return current;
+        // Keep the canvas point under the cursor fixed while the scale changes.
+        const ratio = z / current.z;
+        const next = {
+          z,
+          x: px - (px - current.x) * ratio,
+          y: py - (py - current.y) * ratio,
+        };
+        onViewportChange?.(next, frameSize());
+        return next;
       });
     },
-    [update],
+    [frameSize, onViewportChange],
   );
 
   useImperativeHandle(
@@ -202,15 +183,19 @@ export function CanvasStage({
         const frame = frameRef.current;
         if (!frame) return;
         const rect = frame.getBoundingClientRect();
-        const zoom = clampZoom(z ?? current.current.z);
-        update({
-          z: zoom,
-          x: rect.width / 2 - x * zoom,
-          y: rect.height / 2 - y * zoom,
+        setViewport((current) => {
+          const zoom = clampZoom(z ?? current.z);
+          const next = {
+            z: zoom,
+            x: rect.width / 2 - x * zoom,
+            y: rect.height / 2 - y * zoom,
+          };
+          onViewportChange?.(next, frameSize());
+          return next;
         });
       },
     }),
-    [contentWidth, fit, update, zoomAt],
+    [contentWidth, fit, frameSize, onViewportChange, update, zoomAt],
   );
 
   // Fit once, as soon as the frame has a measurable size.
@@ -248,17 +233,20 @@ export function CanvasStage({
       }
       if (!wheelPan) return;
       event.preventDefault();
-      const from = current.current;
-      update({
-        z: from.z,
-        x: from.x - event.deltaX,
-        y: from.y - event.deltaY,
+      setViewport((current) => {
+        const next = {
+          ...current,
+          x: current.x - event.deltaX,
+          y: current.y - event.deltaY,
+        };
+        onViewportChange?.(next, frameSize());
+        return next;
       });
     };
 
     frame.addEventListener("wheel", onWheel, { passive: false });
     return () => frame.removeEventListener("wheel", onWheel);
-  }, [update, wheelPan, zoomAt]);
+  }, [frameSize, onViewportChange, wheelPan, zoomAt]);
 
   // Space-to-pan and the zoom shortcuts, scoped to a focused canvas so they
   // never fight the SQL editor next door.
@@ -315,8 +303,8 @@ export function CanvasStage({
     panOrigin.current = {
       x: event.clientX,
       y: event.clientY,
-      vx: current.current.x,
-      vy: current.current.y,
+      vx: viewport.x,
+      vy: viewport.y,
     };
     setPanning(true);
   };
@@ -341,11 +329,12 @@ export function CanvasStage({
       onPointerDown={startPan}
       onPointerMove={(event) => {
         if (!panning) return;
-        update({
-          z: current.current.z,
+        const next = {
+          z: viewport.z,
           x: panOrigin.current.vx + (event.clientX - panOrigin.current.x),
           y: panOrigin.current.vy + (event.clientY - panOrigin.current.y),
-        });
+        };
+        update(next);
       }}
       onPointerUp={(event) => {
         if (event.currentTarget.hasPointerCapture(event.pointerId)) {
