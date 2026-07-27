@@ -32,7 +32,7 @@ export async function NoticeBar() {
     "group flex items-center justify-center gap-2.5 bg-navy-900 px-5 py-2.5 text-center text-[0.8125rem] font-medium text-navy-100";
 
   return (
-    <div className="relative z-40">
+    <div data-notice-bar="" className="relative z-40">
       {notice.href ? (
         <Link href={notice.href} className={classes}>
           {body}

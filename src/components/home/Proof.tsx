@@ -2,18 +2,12 @@ import { Reveal } from "@/components/motion/Reveal";
 import { PlacementCard } from "@/components/site/PlacementCard";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
 import { Container, Section, SectionHeader } from "@/components/ui/Section";
-import { placementsByPackage } from "@/content/placements";
+import { placements } from "@/content/placements";
 
-/**
- * The "proof" beat — the heaviest lifting on the page.
- *
- * Numbers first (cheap to scan, hard to argue with), then named students with
- * their actual packages scrolling in an infinite marquee, then a route to all
- * stories. Company names stay as "MNC" — published that way on the original site.
- */
+/** Learner voices shown in two calm, continuously scrolling rows. */
 export function Proof() {
   // Split placements into two rows; pad each to at least 6 cards
-  const all = placementsByPackage;
+  const all = placements;
   const half = Math.ceil(all.length / 2);
   const row1 = all.slice(0, half);
   const row2 = all.slice(half);
@@ -33,9 +27,9 @@ export function Proof() {
         <Reveal>
           <SectionHeader
             tone="dark"
-            eyebrow="Proof"
-            title="1,000+ students placed"
-            description="₹5.5 LPA to ₹20 LPA packages. ETL and automation testing roles at top companies in Bengaluru and Pune."
+            eyebrow="Learner voices"
+            title="Progress, shared in their own words"
+            description="Reflections on practical training, patient mentorship and the confidence to take a meaningful next step."
             align="center"
           />
         </Reveal>
@@ -54,7 +48,7 @@ export function Proof() {
       <Container className="relative">
         <Reveal delay={100} className="mt-10 flex justify-center">
           <ButtonLink href="/placements" variant="onDark" size="lg">
-            Read all {placementsByPackage.length} placement stories
+            Read all {placements.length} placement stories
             <ArrowIcon />
           </ButtonLink>
         </Reveal>
@@ -69,7 +63,7 @@ function MarqueeRow({
   direction,
   className,
 }: {
-  items: (typeof placementsByPackage)[number][];
+  items: (typeof placements)[number][];
   direction: "left" | "right";
   className?: string;
 }) {

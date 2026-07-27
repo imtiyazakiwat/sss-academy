@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored third-party runtime, copied in by scripts/copy-sql-wasm.mjs.
+    // It is a prebuilt Emscripten bundle and not ours to lint or fix.
+    "public/sql/**",
   ]),
 ]);
 
