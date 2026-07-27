@@ -7,7 +7,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/site/Logo";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
 import { courses, trackLabels, type CourseTrack } from "@/content/courses";
-import { contact } from "@/content/site";
 import { cn } from "@/lib/cn";
 
 const links: { label: string; href: string; hasMenu?: boolean }[] = [
@@ -224,21 +223,6 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-5 lg:flex">
-          <a
-            href={`tel:${contact.phoneHrefs[0]}`}
-            className="flex items-center gap-2 text-[0.9375rem] font-medium text-navy-900 transition-colors hover:text-violet-700"
-          >
-            <svg viewBox="0 0 18 18" aria-hidden="true" className="size-4">
-              <path
-                d="M6.2 2.6 7.6 5.3 6.1 6.9c.6 1.6 2.4 3.4 4 4l1.6-1.5 2.7 1.4-.4 2.3c-.2.7-.9 1.1-1.6 1C8.2 13.4 4.6 9.8 3.5 5.2c-.2-.7.3-1.4 1-1.6l1.7-.4Z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinejoin="round"
-              />
-            </svg>
-            {contact.phones[0]}
-          </a>
           <ButtonLink href="/contact" size="md">
             Enroll Now
             <ArrowIcon />
@@ -292,19 +276,10 @@ export function Navbar() {
             ))}
           </nav>
 
-          {/* Clicks bubble up from either CTA, so the drawer closes on both */}
           <div className="mt-8 space-y-3" onClick={close}>
             <ButtonLink href="/contact" size="lg" className="w-full">
               Enroll Now
               <ArrowIcon />
-            </ButtonLink>
-            <ButtonLink
-              href={`tel:${contact.phoneHrefs[0]}`}
-              variant="ghost"
-              size="lg"
-              className="w-full"
-            >
-              Call {contact.phones[0]}
             </ButtonLink>
           </div>
         </div>
