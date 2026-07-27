@@ -1,24 +1,22 @@
-import { CountUp } from "@/components/motion/CountUp";
 import { Reveal } from "@/components/motion/Reveal";
 import { PlacementCard } from "@/components/site/PlacementCard";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
 import { Container, Section, SectionHeader } from "@/components/ui/Section";
-import { stats } from "@/content/about";
-import {
-  averagePackage,
-  highestPackage,
-  placementsByPackage,
-} from "@/content/placements";
+import { placementsByPackage } from "@/content/placements";
 
 /**
  * The "proof" beat — the heaviest lifting on the page.
  *
  * Numbers first (cheap to scan, hard to argue with), then named students with
- * their actual packages, then a route to all 23 stories. Company names stay as
- * "MNC" because that is how they were published on the original site.
+ * their actual packages scrolling in an infinite marquee, then a route to all
+ * stories. Company names stay as "MNC" — published that way on the original site.
  */
 export function Proof() {
-  const featured = placementsByPackage.slice(0, 6);
+  // Split placements into two rows; pad each to at least 6 cards
+  const all = placementsByPackage;
+  const half = Math.ceil(all.length / 2);
+  const row1 = all.slice(0, half);
+  const row2 = all.slice(half);
 
   return (
     <Section tone="dark" className="overflow-hidden">
@@ -36,50 +34,24 @@ export function Proof() {
           <SectionHeader
             tone="dark"
             eyebrow="Proof"
-            title="1000+ students placed. Here is what that looks like."
-            description="Packages from ₹5.5 LPA to ₹20 LPA, mostly into ETL and automation testing roles at multinationals in Bengaluru and Pune."
+            title="1,000+ students placed"
+            description="₹5.5 LPA to ₹20 LPA packages. ETL and automation testing roles at top companies in Bengaluru and Pune."
+            align="center"
           />
         </Reveal>
 
-        <dl className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:grid-cols-3">
-          {stats.map((stat, i) => (
-            <Reveal
-              key={stat.label}
-              delay={i * 100}
-              className="bg-navy-950/80 px-7 py-8 backdrop-blur"
-            >
-              <dt className="text-eyebrow uppercase text-navy-400">
-                {stat.label}
-              </dt>
-              <dd className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">
-                <CountUp value={stat.value} suffix={stat.suffix} />
-              </dd>
-            </Reveal>
-          ))}
-        </dl>
 
-        <Reveal
-          delay={120}
-          className="mt-4 grid gap-4 sm:grid-cols-2"
-        >
-          <Highlight
-            value={`₹${highestPackage.toFixed(2)} LPA`}
-            label="Highest package on record"
-          />
-          <Highlight
-            value={`₹${averagePackage.toFixed(2)} LPA`}
-            label="Average across published placements"
-          />
-        </Reveal>
+      </Container>
 
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.map((placement, i) => (
-            <Reveal key={placement.slug} delay={(i % 3) * 80} scale={0.98}>
-              <PlacementCard placement={placement} compact />
-            </Reveal>
-          ))}
-        </div>
+      {/* Marquee — intentionally full-bleed, overflows Container */}
+      <div className="relative mt-14 mask-edges" aria-label="Student placement testimonials">
+        {/* Row 1 — scrolls left */}
+        <MarqueeRow items={row1} direction="left" />
+        {/* Row 2 — scrolls right for a dynamic opposing feel */}
+        <MarqueeRow items={row2} direction="right" className="mt-4" />
+      </div>
 
+      <Container className="relative">
         <Reveal delay={100} className="mt-10 flex justify-center">
           <ButtonLink href="/placements" variant="onDark" size="lg">
             Read all {placementsByPackage.length} placement stories
@@ -91,13 +63,32 @@ export function Proof() {
   );
 }
 
-function Highlight({ value, label }: { value: string; label: string }) {
+/** One infinite-scroll row of placement cards. */
+function MarqueeRow({
+  items,
+  direction,
+  className,
+}: {
+  items: (typeof placementsByPackage)[number][];
+  direction: "left" | "right";
+  className?: string;
+}) {
+  // Duplicate for seamless loop
+  const doubled = [...items, ...items];
+
   return (
-    <div className="flex items-baseline justify-between gap-4 rounded-2xl border border-ember-400/25 bg-ember-500/10 px-7 py-5">
-      <span className="text-2xl font-semibold tracking-[-0.03em] text-white">
-        {value}
-      </span>
-      <span className="text-right text-xs text-ember-200">{label}</span>
+    <div
+      className={`flex w-max gap-4 ${className ?? ""}`}
+      style={{
+        animation: `marquee ${direction === "right" ? "50s" : "40s"} linear infinite ${direction === "right" ? "reverse" : ""}`,
+      }}
+    >
+      {doubled.map((placement, i) => (
+        <div key={`${placement.slug}-${i}`} className="w-[320px] shrink-0">
+          <PlacementCard placement={placement} compact />
+        </div>
+      ))}
     </div>
   );
 }
+
