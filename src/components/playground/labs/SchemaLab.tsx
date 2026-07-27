@@ -235,7 +235,7 @@ export function SchemaLab({ lab }: { lab: Lab }) {
                     y1={from.y}
                     x2={to.x}
                     y2={to.y}
-                    stroke={active ? "#f26522" : "rgba(255,255,255,0.16)"}
+                    stroke={active ? "#d95d39" : "rgba(255,255,255,0.16)"}
                     strokeWidth={active ? 2.5 : 1.5}
                     className="transition-all duration-300"
                   />
@@ -269,7 +269,7 @@ export function SchemaLab({ lab }: { lab: Lab }) {
                       y1={from.y}
                       x2={to.x}
                       y2={to.y}
-                      stroke="rgba(189,169,255,0.45)"
+                      stroke="rgba(169,194,177,0.45)"
                       strokeWidth={1.5}
                       strokeDasharray="5 4"
                     />
@@ -305,16 +305,16 @@ export function SchemaLab({ lab }: { lab: Lab }) {
                   className="transition-all duration-300"
                   fill={
                     isFact
-                      ? "rgba(242,101,34,0.14)"
+                      ? "rgba(217,93,57,0.14)"
                       : active
-                        ? "rgba(127,77,251,0.22)"
+                        ? "rgba(95,136,114,0.22)"
                         : "rgba(255,255,255,0.04)"
                   }
                   stroke={
                     isFact
-                      ? "rgba(242,101,34,0.55)"
+                      ? "rgba(217,93,57,0.55)"
                       : active
-                        ? "rgba(189,169,255,0.75)"
+                        ? "rgba(169,194,177,0.75)"
                         : "rgba(255,255,255,0.14)"
                   }
                   strokeWidth={active || isFact ? 2 : 1}

@@ -83,7 +83,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0d1a31",
+  themeColor: "#173f35",
   colorScheme: "light",
 };
 
@@ -96,7 +96,7 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       className={`${inter.variable} ${mono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-white">
+      <body className="flex min-h-full flex-col bg-[#fffdf8]">
         {/* Scroll reveals start at opacity 0 and are shown by an observer.
             Without JS nothing would ever reveal, so force the final state. */}
         <noscript>

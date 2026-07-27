@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/JsonLd";
 import { Reveal } from "@/components/motion/Reveal";
 import { CourseCard } from "@/components/site/CourseCard";
+import { CourseHero } from "@/components/site/CourseHero";
 import { EnquiryForm } from "@/components/site/EnquiryForm";
-import { PageHero } from "@/components/site/PageHero";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
 import { Container, Eyebrow, Section } from "@/components/ui/Section";
 import {
@@ -13,7 +13,6 @@ import {
   durationLabel,
   getCourse,
   relatedCourses,
-  trackLabels,
 } from "@/content/courses";
 import { placementsByPackage } from "@/content/placements";
 import { contact } from "@/content/site";
@@ -56,38 +55,7 @@ export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
 
   return (
     <>
-      <PageHero
-        eyebrow={trackLabels[course.track]}
-        title={`${course.title} Training`}
-        description={course.summary}
-        breadcrumb={[
-          { name: "Courses", href: "/courses" },
-          { name: course.title, href: `/courses/${course.slug}` },
-        ]}
-        aside={
-          <div className="rounded-2xl border border-white/12 bg-white/[0.06] p-6 backdrop-blur">
-            <dl className="space-y-4">
-              <Row label="Duration" value={durationLabel(course.durationMonths)} />
-              <Row label="Level" value={course.level} />
-              <Row label="Track" value={trackLabels[course.track]} />
-              <Row label="Mode" value="Classroom, Chikkodi" />
-            </dl>
-            <div className="mt-6 flex flex-col gap-2.5">
-              <ButtonLink href="#enquire" size="md">
-                Enquire about this course
-                <ArrowIcon />
-              </ButtonLink>
-              <ButtonLink
-                href={`tel:${contact.phoneHrefs[0]}`}
-                variant="onDark"
-                size="md"
-              >
-                Call {contact.phones[0]}
-              </ButtonLink>
-            </div>
-          </div>
-        }
-      />
+      <CourseHero course={course} />
 
       <Section className="py-16 sm:py-20">
         <Container>
@@ -263,14 +231,5 @@ export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
         ])}
       />
     </>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-white/10 pb-3 last:border-b-0 last:pb-0">
-      <dt className="text-xs text-navy-400">{label}</dt>
-      <dd className="text-sm font-medium text-white">{value}</dd>
-    </div>
   );
 }

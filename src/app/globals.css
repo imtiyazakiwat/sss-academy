@@ -2,68 +2,69 @@
 
 /* ============================================================
    SSS Academy — design tokens
-   Brand: navy (authority/trust) + orange (action/energy)
+   Palette: parchment + forest + terracotta + sage + mustard
    ============================================================ */
 
 @theme {
-  /* Brand ------------------------------------------------- */
-  --color-navy-50: #eef3fb;
-  --color-navy-100: #d8e3f5;
-  --color-navy-200: #b3c7e8;
-  --color-navy-300: #7f9fd4;
-  --color-navy-400: #4d74b5;
-  --color-navy-500: #2f5596;
-  --color-navy-600: #21427c;
-  --color-navy-700: #1b3563;
-  --color-navy-800: #142748;
-  --color-navy-900: #0d1a31;
-  --color-navy-950: #070f1d;
+  /* Editorial palette -------------------------------------
+     The existing semantic family names are retained so the migration reaches
+     every page without changing component layout. Their values now express the
+     approved parchment, forest, terracotta, sage and warm-neutral system. */
+  --color-navy-50: #f0f5f1;
+  --color-navy-100: #e3ede5;
+  --color-navy-200: #cbdcce;
+  --color-navy-300: #a9c2b1;
+  --color-navy-400: #82a58f;
+  --color-navy-500: #5f8872;
+  --color-navy-600: #47715d;
+  --color-navy-700: #315a4a;
+  --color-navy-800: #234b3e;
+  --color-navy-900: #173f35;
+  --color-navy-950: #0f3028;
 
-  /* Violet carries the headline and most UI accents; navy stays for structure
-     and dark sections, ember stays for the single primary action. */
-  --color-violet-50: #f5f2ff;
-  --color-violet-100: #ebe5ff;
-  --color-violet-200: #d9cfff;
-  --color-violet-300: #bda9ff;
-  --color-violet-400: #9d7bff;
-  --color-violet-500: #7f4dfb;
-  --color-violet-600: #6c2bef;
-  --color-violet-700: #5b1fd1;
-  --color-violet-800: #4a1ba8;
-  --color-violet-900: #3d1a85;
+  /* Sage is the quiet supporting accent used for hover and informational UI. */
+  --color-violet-50: #f1f6f2;
+  --color-violet-100: #e3ede5;
+  --color-violet-200: #cbdcce;
+  --color-violet-300: #a9c2b1;
+  --color-violet-400: #82a58f;
+  --color-violet-500: #5f8872;
+  --color-violet-600: #47715d;
+  --color-violet-700: #315a4a;
+  --color-violet-800: #234b3e;
+  --color-violet-900: #173f35;
 
-  --color-mint-50: #eefaf3;
-  --color-mint-100: #d5f4e2;
-  --color-mint-500: #17a35c;
-  --color-mint-600: #0f8a4c;
-  --color-mint-700: #0c6f3e;
+  /* Success and completion states use a clearer botanical green. */
+  --color-mint-50: #f1f6f2;
+  --color-mint-100: #dce9de;
+  --color-mint-500: #4f8a69;
+  --color-mint-600: #357356;
+  --color-mint-700: #27604f;
 
-  --color-ember-50: #fff4ed;
-  --color-ember-100: #ffe4d3;
-  --color-ember-200: #ffc5a5;
-  --color-ember-300: #ff9d6d;
-  --color-ember-400: #fb7333;
-  /* 500 is the logo's orange. It only clears 3.15:1 on white, so it is reserved
-     for graphics, fills and glows — never for small text or button labels. */
-  --color-ember-500: #f26522;
-  /* 600 is darkened from the brand orange to reach 4.57:1 on white, which is
-     what lets it carry text and primary button labels at AA. */
-  --color-ember-600: #d24509;
-  --color-ember-700: #b4380f;
-  --color-ember-800: #8f2e13;
-  --color-ember-900: #742813;
+  /* Terracotta is reserved for action and emphasis. 600+ are dark enough for
+     small text and white-label controls on warm surfaces. */
+  --color-ember-50: #fdf2ed;
+  --color-ember-100: #fae2d8;
+  --color-ember-200: #f2c4b2;
+  --color-ember-300: #e99c82;
+  --color-ember-400: #df7655;
+  --color-ember-500: #d95d39;
+  --color-ember-600: #b84a2d;
+  --color-ember-700: #963b27;
+  --color-ember-800: #793022;
+  --color-ember-900: #61291f;
 
-  /* Neutrals (slightly cool, keeps navy coherent) --------- */
-  --color-ink-50: #f7f8fa;
-  --color-ink-100: #eef0f4;
-  --color-ink-200: #dfe3ea;
-  --color-ink-300: #c3cad6;
-  --color-ink-400: #8f9aac;
-  --color-ink-500: #647085;
-  --color-ink-600: #4b5666;
-  --color-ink-700: #384150;
-  --color-ink-800: #232b38;
-  --color-ink-900: #141a24;
+  /* Warm neutrals keep white surfaces compatible with parchment sections. */
+  --color-ink-50: #f8f3e9;
+  --color-ink-100: #f0eade;
+  --color-ink-200: #ded7ca;
+  --color-ink-300: #c4bbad;
+  --color-ink-400: #8b857b;
+  --color-ink-500: #6f6a62;
+  --color-ink-600: #57534d;
+  --color-ink-700: #403d38;
+  --color-ink-800: #2d2b27;
+  --color-ink-900: #1d1c19;
 
   /* Type ------------------------------------------------- */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -94,11 +95,11 @@
   --text-eyebrow--letter-spacing: 0.14em;
   --text-eyebrow--font-weight: 600;
 
-  /* Elevation — soft, navy-tinted, never grey mush -------- */
-  --shadow-subtle: 0 1px 2px 0 rgb(13 26 49 / 0.04), 0 1px 3px 0 rgb(13 26 49 / 0.06);
-  --shadow-card: 0 1px 2px rgb(13 26 49 / 0.04), 0 8px 24px -8px rgb(13 26 49 / 0.1);
-  --shadow-lift: 0 2px 4px rgb(13 26 49 / 0.05), 0 18px 40px -12px rgb(13 26 49 / 0.18);
-  --shadow-glow: 0 20px 60px -20px rgb(242 101 34 / 0.45);
+  /* Elevation uses forest-tinted shadows and a restrained terracotta glow. */
+  --shadow-subtle: 0 1px 2px 0 rgb(23 63 53 / 0.04), 0 1px 3px 0 rgb(23 63 53 / 0.06);
+  --shadow-card: 0 1px 2px rgb(23 63 53 / 0.04), 0 8px 24px -8px rgb(23 63 53 / 0.1);
+  --shadow-lift: 0 2px 4px rgb(23 63 53 / 0.05), 0 18px 40px -12px rgb(23 63 53 / 0.18);
+  --shadow-glow: 0 20px 60px -20px rgb(217 93 57 / 0.38);
 
   /* Motion ----------------------------------------------- */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -137,10 +138,10 @@
 /* Draws the eye to a row a validation check just failed. */
 @keyframes pulse-bad {
   0% {
-    background-color: rgb(242 101 34 / 0.34);
+    background-color: rgb(217 93 57 / 0.3);
   }
   100% {
-    background-color: rgb(242 101 34 / 0.12);
+    background-color: rgb(217 93 57 / 0.1);
   }
 }
 
@@ -165,7 +166,7 @@
   }
 
   body {
-    background-color: #fff;
+    background-color: #fffdf8;
     color: var(--color-ink-800);
     font-family: var(--font-sans);
     text-rendering: optimizeLegibility;
@@ -216,8 +217,8 @@
 
 @utility grid-lines {
   background-image:
-    linear-gradient(to right, rgb(13 26 49 / 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(13 26 49 / 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgb(23 63 53 / 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(23 63 53 / 0.055) 1px, transparent 1px);
   background-size: 56px 56px;
 }
 
@@ -244,14 +245,7 @@
 }
 
 @utility text-gradient-brand {
-  background-image: linear-gradient(
-    100deg,
-    var(--color-violet-700) 0%,
-    var(--color-violet-500) 55%,
-    var(--color-violet-400) 100%
-  );
-  background-clip: text;
-  color: transparent;
+  color: var(--color-ember-500);
 }
 
 /* The hero's sweeping right-hand edge. An ellipse clip is used rather than an
@@ -262,7 +256,7 @@
 
 @utility dot-grid {
   background-image: radial-gradient(
-    rgb(108 43 239 / 0.18) 1px,
+    rgb(71 113 93 / 0.2) 1px,
     transparent 1px
   );
   background-size: 16px 16px;
