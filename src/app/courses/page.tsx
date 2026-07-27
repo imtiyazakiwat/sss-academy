@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { JsonLd } from "@/components/JsonLd";
 import { Reveal } from "@/components/motion/Reveal";
 import { CourseCard } from "@/components/site/CourseCard";
-import { CtaBand } from "@/components/site/CtaBand";
 import { PageHero } from "@/components/site/PageHero";
 import { Container, Section } from "@/components/ui/Section";
 import { courses, type CourseTrack } from "@/content/courses";
@@ -76,12 +75,6 @@ export default function CoursesPage() {
           </div>
         </Container>
       </Section>
-
-      <CtaBand
-        eyebrow="Still deciding"
-        title="Tell us the job you want. We'll tell you the track."
-        body="A free counselling call takes fifteen minutes. We look at your background and the roles you're targeting, then recommend the shortest honest path — even if that means a cheaper course than you expected."
-      />
 
       <JsonLd data={courseListSchema} />
       <JsonLd
