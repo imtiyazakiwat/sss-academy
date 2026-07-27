@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { useDb, useQuery } from "@/components/playground/DbProvider";
-import { LabIntro, Panel, PillButton } from "@/components/playground/LabChrome";
+import { LabIntro, LabScroll, Panel, PillButton } from "@/components/playground/LabChrome";
 import { ResultTable, type RowFlag } from "@/components/playground/ResultTable";
 import type { Lab } from "@/content/labs";
 import type { QueryOutcome, ResultSet, SqlValue } from "@/lib/sqlite";
@@ -184,7 +184,7 @@ export function ValidationLab({ lab }: { lab: Lab }) {
   }, [results]);
 
   return (
-    <div className="space-y-5">
+    <LabScroll>
       <LabIntro lab={lab} />
 
       <Panel
@@ -212,7 +212,7 @@ export function ValidationLab({ lab }: { lab: Lab }) {
                 key={check.id}
                 className={cn(
                   "overflow-hidden rounded-xl border transition-colors",
-                  expanded ? "border-white/20 bg-white/[0.04]" : "border-white/8",
+                  expanded ? "border-pg-line-strong bg-pg-hover" : "border-pg-line",
                 )}
               >
                 <div className="flex items-stretch">
@@ -220,16 +220,16 @@ export function ValidationLab({ lab }: { lab: Lab }) {
                     type="button"
                     onClick={() => setOpen(expanded ? "" : check.id)}
                     aria-expanded={expanded}
-                    className="flex min-w-0 flex-1 items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-white/[0.03]"
+                    className="flex min-w-0 flex-1 items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-pg-raised"
                   >
-                    <span className="font-mono text-[0.6875rem] text-ink-500">
+                    <span className="font-mono text-[0.6875rem] text-pg-faint">
                       {String(index + 1).padStart(2, "0")}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[0.875rem] font-medium text-white">
+                      <span className="block text-[0.875rem] font-medium text-pg-text">
                         {check.title}
                       </span>
-                      <span className="mt-0.5 block text-[0.6875rem] leading-relaxed text-ink-400">
+                      <span className="mt-0.5 block text-[0.6875rem] leading-relaxed text-pg-dim">
                         {check.why}
                       </span>
                     </span>
@@ -240,15 +240,15 @@ export function ValidationLab({ lab }: { lab: Lab }) {
                     type="button"
                     onClick={() => runCheck(check)}
                     disabled={status !== "ready"}
-                    className="shrink-0 border-l border-white/8 px-3 text-xs font-medium text-ink-300 transition-colors hover:bg-white/[0.06] hover:text-white disabled:opacity-50"
+                    className="shrink-0 border-l border-pg-line px-3 text-xs font-medium text-pg-dim transition-colors hover:bg-pg-hover hover:text-pg-text disabled:opacity-50"
                   >
                     Run
                   </button>
                 </div>
 
                 {expanded ? (
-                  <div className="space-y-3 border-t border-white/8 p-3.5">
-                    <pre className="overflow-x-auto rounded-lg bg-navy-950/70 p-3 font-mono text-[0.75rem] leading-relaxed text-ink-200">
+                  <div className="space-y-3 border-t border-pg-line p-3.5">
+                    <pre className="overflow-x-auto rounded-lg bg-pg-bg p-3 font-mono text-[0.75rem] leading-relaxed text-pg-text">
                       {check.sql}
                     </pre>
 
@@ -257,7 +257,7 @@ export function ValidationLab({ lab }: { lab: Lab }) {
                     ) : outcome ? (
                       <div className="space-y-3">
                         {check.labelA ? (
-                          <p className="text-[0.75rem] font-medium text-ink-300">
+                          <p className="text-[0.75rem] font-medium text-pg-dim">
                             {check.labelA}
                           </p>
                         ) : null}
@@ -271,11 +271,11 @@ export function ValidationLab({ lab }: { lab: Lab }) {
 
                         {check.sqlB ? (
                           <>
-                            <pre className="overflow-x-auto rounded-lg bg-navy-950/70 p-3 font-mono text-[0.75rem] leading-relaxed text-ink-200">
+                            <pre className="overflow-x-auto rounded-lg bg-pg-bg p-3 font-mono text-[0.75rem] leading-relaxed text-pg-text">
                               {check.sqlB}
                             </pre>
                             {check.labelB ? (
-                              <p className="text-[0.75rem] font-medium text-ink-300">
+                              <p className="text-[0.75rem] font-medium text-pg-dim">
                                 {check.labelB}
                               </p>
                             ) : null}
@@ -291,7 +291,7 @@ export function ValidationLab({ lab }: { lab: Lab }) {
                         <Interpretation check={check} outcome={outcome} />
                       </div>
                     ) : (
-                      <p className="text-sm text-ink-400">
+                      <p className="text-sm text-pg-dim">
                         Press Run to execute this check against the live database.
                       </p>
                     )}
@@ -302,7 +302,7 @@ export function ValidationLab({ lab }: { lab: Lab }) {
           })}
         </ol>
       </Panel>
-    </div>
+    </LabScroll>
   );
 }
 
@@ -334,15 +334,15 @@ function judge(
 function VerdictBadge({ verdict }: { verdict: Verdict | null }) {
   if (!verdict) {
     return (
-      <span className="shrink-0 rounded-full bg-white/8 px-2.5 py-1 text-[0.625rem] font-medium text-ink-400">
+      <span className="shrink-0 rounded-full bg-pg-hover px-2.5 py-1 text-[0.625rem] font-medium text-pg-dim">
         Not run
       </span>
     );
   }
   const map = {
-    pass: { label: "Pass", className: "bg-mint-500/20 text-mint-100" },
-    fail: { label: "Defect", className: "bg-ember-500/20 text-ember-100" },
-    inspect: { label: "Review", className: "bg-amber-400/20 text-amber-100" },
+    pass: { label: "Pass", className: "bg-pg-sky-soft text-pg-sky" },
+    fail: { label: "Defect", className: "bg-pg-rose-soft text-pg-rose" },
+    inspect: { label: "Review", className: "bg-pg-gold-soft text-pg-gold" },
   } as const;
   const { label, className } = map[verdict];
   return (
@@ -390,9 +390,9 @@ function Interpretation({
     <p
       className={cn(
         "rounded-lg px-3.5 py-2.5 text-[0.8125rem] leading-relaxed",
-        verdict === "pass" && "bg-mint-500/10 text-mint-100",
-        verdict === "fail" && "bg-ember-500/10 text-ember-100",
-        verdict === "inspect" && "bg-amber-400/8 text-amber-100",
+        verdict === "pass" && "bg-pg-sky-soft text-pg-sky",
+        verdict === "fail" && "bg-pg-rose-soft text-pg-rose",
+        verdict === "inspect" && "bg-pg-gold-soft text-pg-gold",
       )}
     >
       {text}
@@ -440,28 +440,28 @@ function MetadataComparison() {
               key={row.source}
               className={cn(
                 "grid items-center gap-2 rounded-lg border px-3 py-2 sm:grid-cols-[1fr_auto_1fr_1.4fr]",
-                missing && "border-ember-500/40 bg-ember-500/10",
-                mismatch && "border-amber-400/35 bg-amber-400/8",
-                !missing && !mismatch && "border-mint-500/30 bg-mint-500/8",
+                missing && "border-pg-rose/45 bg-pg-rose-soft",
+                mismatch && "border-pg-gold/40 bg-pg-gold-soft",
+                !missing && !mismatch && "border-pg-sky/40 bg-pg-sky-soft",
               )}
             >
-              <span className="font-mono text-[0.75rem] text-ink-100">
+              <span className="font-mono text-[0.75rem] text-pg-text">
                 src_sales.{row.source}
-                <span className="ml-1.5 text-ink-400">{from ?? "missing"}</span>
+                <span className="ml-1.5 text-pg-dim">{from ?? "missing"}</span>
               </span>
-              <span aria-hidden="true" className="text-ink-400">
+              <span aria-hidden="true" className="text-pg-dim">
                 →
               </span>
-              <span className="font-mono text-[0.75rem] text-ink-100">
+              <span className="font-mono text-[0.75rem] text-pg-text">
                 tgt_sales.{row.target}
-                <span className="ml-1.5 text-ink-400">{to ?? "missing"}</span>
+                <span className="ml-1.5 text-pg-dim">{to ?? "missing"}</span>
               </span>
               <span
                 className={cn(
                   "text-[0.6875rem] leading-relaxed",
-                  missing && "text-ember-100",
-                  mismatch && "text-amber-100",
-                  !missing && !mismatch && "text-mint-100",
+                  missing && "text-pg-rose",
+                  mismatch && "text-pg-gold",
+                  !missing && !mismatch && "text-pg-sky",
                 )}
               >
                 {missing
@@ -475,7 +475,7 @@ function MetadataComparison() {
         })}
       </ul>
 
-      <p className="rounded-lg bg-amber-400/8 px-3.5 py-2.5 text-[0.8125rem] leading-relaxed text-amber-100">
+      <p className="rounded-lg bg-pg-gold-soft px-3.5 py-2.5 text-[0.8125rem] leading-relaxed text-pg-gold">
         Every source column arrives as TEXT because the extract is a flat file, so
         each mapping into the typed target needs an explicit cast. Skip it and the
         engine stores what it was given: land this extract in stg_sales as-is and 20

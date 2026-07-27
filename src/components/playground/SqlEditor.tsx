@@ -24,17 +24,21 @@ import {
 } from "@/lib/sql-lang";
 import { cn } from "@/lib/cn";
 
-/** Token colours, checked for contrast against navy-950. */
+/**
+ * Token colours come from the theme's syntax scale rather than the palette, so
+ * one attribute flip re-colours the editor and every hue stays contrast-checked
+ * against its own surface.
+ */
 const TOKEN_CLASS: Record<TokenKind, string> = {
-  keyword: "text-violet-300",
-  type: "text-navy-300",
-  function: "text-ember-300",
-  string: "text-mint-100",
-  number: "text-ember-200",
-  comment: "text-ink-500 italic",
-  operator: "text-navy-200",
-  punctuation: "text-ink-400",
-  identifier: "text-ink-100",
+  keyword: "text-[var(--pg-syn-keyword)]",
+  type: "text-[var(--pg-syn-type)]",
+  function: "text-[var(--pg-syn-function)]",
+  string: "text-[var(--pg-syn-string)]",
+  number: "text-[var(--pg-syn-number)]",
+  comment: "text-[var(--pg-syn-comment)] italic",
+  operator: "text-[var(--pg-syn-operator)]",
+  punctuation: "text-[var(--pg-syn-punctuation)]",
+  identifier: "text-[var(--pg-syn-identifier)]",
   whitespace: "",
 };
 
@@ -56,6 +60,10 @@ export interface SqlEditorProps {
   /** Extra controls rendered in the toolbar, right of Format. */
   actions?: ReactNode;
   label?: string;
+  /** Fills the parent's height instead of sizing to `rows`. For pane use. */
+  fill?: boolean;
+  /** Draws the eye to Run — used when an example was loaded but not executed. */
+  pulseRun?: boolean;
   className?: string;
 }
 
@@ -79,6 +87,8 @@ export function SqlEditor({
   runLabel = "Execute",
   actions,
   label = "SQL editor",
+  fill = false,
+  pulseRun = false,
   className,
 }: SqlEditorProps) {
   const editorId = useId();
@@ -260,11 +270,12 @@ export function SqlEditor({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-2xl border border-white/10 bg-navy-950 shadow-lift",
+        "overflow-hidden rounded-2xl border border-pg-line bg-pg-surface",
+        fill && "flex h-full min-h-0 flex-col",
         className,
       )}
     >
-      <div className="relative">
+      <div className={cn("relative", fill && "min-h-0 flex-1")}>
         {/* Ruler: 40 zeroes, measured once to get the advance width. */}
         <span
           ref={rulerRef}
@@ -277,7 +288,7 @@ export function SqlEditor({
         <div
           ref={gutterRef}
           aria-hidden="true"
-          className="hide-scrollbar absolute inset-y-0 left-0 overflow-hidden border-r border-white/8 bg-white/[0.02] text-right font-mono text-[13px] text-ink-500 select-none"
+          className="hide-scrollbar absolute inset-y-0 left-0 overflow-hidden border-r border-pg-line bg-pg-raised text-right font-mono text-[13px] text-pg-faint select-none"
           style={{ width: GUTTER, paddingTop: PAD_Y, paddingBottom: PAD_Y }}
         >
           {Array.from({ length: lineCount }, (_, index) => (
@@ -322,7 +333,7 @@ export function SqlEditor({
           }}
           onBlur={closeSuggestions}
           onScroll={syncScroll}
-          rows={rows}
+          rows={fill ? undefined : rows}
           spellCheck={false}
           autoCapitalize="off"
           autoCorrect="off"
@@ -330,7 +341,10 @@ export function SqlEditor({
           aria-label={label}
           aria-autocomplete="list"
           aria-describedby={`${editorId}-hint`}
-          className="relative block w-full resize-none bg-transparent font-mono text-[13px] text-transparent caret-white outline-none selection:bg-violet-500/35"
+          className={cn(
+            "block w-full resize-none bg-transparent font-mono text-[13px] text-transparent caret-[var(--pg-caret)] outline-none selection:bg-[var(--pg-selection)]",
+            fill ? "absolute inset-0 h-full" : "relative",
+          )}
           style={{
             paddingTop: PAD_Y,
             paddingBottom: PAD_Y,
@@ -358,7 +372,7 @@ export function SqlEditor({
           <ul
             role="listbox"
             aria-label="SQL suggestions"
-            className="absolute z-20 max-h-60 w-64 overflow-auto rounded-xl border border-white/12 bg-navy-900 py-1 shadow-lift"
+            className="pg-scroll animate-pg-fade-in absolute z-20 max-h-60 w-64 overflow-auto rounded-xl border border-pg-line-strong bg-pg-raised py-1 shadow-lift"
             style={{ left: popupLeft, top: popupTop }}
           >
             {suggestions.map((item, index) => (
@@ -376,12 +390,12 @@ export function SqlEditor({
                   className={cn(
                     "flex w-full items-baseline justify-between gap-3 px-3 py-1.5 text-left font-mono text-xs transition-colors",
                     index === active
-                      ? "bg-violet-500/25 text-white"
-                      : "text-ink-200 hover:bg-white/5",
+                      ? "bg-pg-primary-soft text-pg-text"
+                      : "text-pg-dim hover:bg-pg-hover",
                   )}
                 >
                   <span className="truncate">{item.label}</span>
-                  <span className="shrink-0 text-[0.6875rem] text-ink-400">
+                  <span className="shrink-0 text-[0.6875rem] text-pg-faint">
                     {item.detail}
                   </span>
                 </button>
@@ -391,7 +405,7 @@ export function SqlEditor({
         ) : null}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 border-t border-white/8 bg-white/[0.03] px-3 py-2.5">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-pg-line bg-pg-raised px-3 py-2.5">
         <button
           type="button"
           onClick={() => {
@@ -399,7 +413,10 @@ export function SqlEditor({
             onRun();
           }}
           disabled={running}
-          className="group inline-flex h-8 items-center gap-1.5 rounded-full bg-ember-600 px-3.5 text-[0.8125rem] font-medium text-white transition-colors hover:bg-ember-700 disabled:opacity-55"
+          className={cn(
+            "group inline-flex h-8 items-center gap-1.5 rounded-full bg-pg-primary px-3.5 text-[0.8125rem] font-medium text-pg-on-primary transition-[background-color,transform,box-shadow] duration-200 hover:bg-pg-primary-hover active:translate-y-px disabled:opacity-55",
+            pulseRun && "animate-pg-nudge",
+          )}
         >
           <svg viewBox="0 0 16 16" aria-hidden="true" className="size-3">
             <path d="M4 2.5 12.5 8 4 13.5Z" fill="currentColor" />
@@ -410,14 +427,14 @@ export function SqlEditor({
         <button
           type="button"
           onClick={format}
-          className="inline-flex h-8 items-center rounded-full border border-white/15 px-3 text-[0.8125rem] font-medium text-ink-200 transition-colors hover:border-white/30 hover:text-white"
+          className="inline-flex h-8 items-center rounded-full border border-pg-line px-3 text-[0.8125rem] font-medium text-pg-dim transition-colors hover:border-pg-line-strong hover:text-pg-text"
         >
           Format
         </button>
 
         {actions}
 
-        <p className="ml-auto hidden font-mono text-[0.6875rem] text-ink-500 sm:block">
+        <p className="ml-auto hidden font-mono text-[0.6875rem] text-pg-faint sm:block">
           ⌘↵ run · ⇧⌥F format · ln {caretLine + 1}, col {caretColumn + 1}
         </p>
       </div>

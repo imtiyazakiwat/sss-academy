@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { DbProvider } from "@/components/playground/DbProvider";
+import {
+  PlaygroundThemeProvider,
+  PlaygroundThemeScript,
+} from "@/components/playground/PlaygroundTheme";
 
 export const metadata: Metadata = {
   title: {
@@ -19,5 +23,10 @@ export const metadata: Metadata = {
  * SCD labs useless back to back.
  */
 export default function PlaygroundLayout({ children }: { children: ReactNode }) {
-  return <DbProvider>{children}</DbProvider>;
+  return (
+    <PlaygroundThemeProvider>
+      <PlaygroundThemeScript />
+      <DbProvider>{children}</DbProvider>
+    </PlaygroundThemeProvider>
+  );
 }

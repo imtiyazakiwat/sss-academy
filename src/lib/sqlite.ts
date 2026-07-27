@@ -207,14 +207,48 @@ export function tableInfo(db: SqlDatabase, table: string): ColumnInfo[] {
   }));
 }
 
-/** SQLite's own plan for a query — the source for the execution timeline. */
-export function explain(db: SqlDatabase, sql: string): string[] {
-  const trimmed = stripTrailingSemicolon(sql);
-  if (!trimmed) return [];
-  const set = query(db, `EXPLAIN QUERY PLAN ${trimmed};`);
-  if (!set) return [];
-  const detail = set.columns.indexOf("detail");
-  return set.values.map((row) => String(row[detail === -1 ? 3 : detail] ?? ""));
+export interface StatementSummary {
+  /** Upper-case leading keyword: SELECT, CREATE, INSERT… */
+  verb: string;
+  /** For DDL, what kind of object: TABLE, VIEW, INDEX… */
+  objectKind?: string;
+  /** For DDL, the object's name. */
+  objectName?: string;
+}
+
+const DDL = /^(create|drop|alter)\s+(?:temp(?:orary)?\s+)?(table|view|index|trigger)\s+(?:if\s+(?:not\s+)?exists\s+)?[`"[]?([\w.]+)/i;
+
+/**
+ * What a batch of SQL actually did, per statement.
+ *
+ * `db.exec` returns a result set only for statements that produce rows, so a
+ * CREATE or an INSERT comes back completely silent. Without this the UI cannot
+ * tell "your DDL worked" apart from "nothing ran", which is indistinguishable
+ * from a broken editor if you have just pasted a script.
+ */
+export function describeStatements(sql: string): StatementSummary[] {
+  return splitStatements(sql).flatMap((statement) => {
+    // Leading comments are common in pasted scripts and would otherwise hide
+    // the verb behind a `--`.
+    const trimmed = statement
+      .replace(/^(?:\s|--[^\n]*\n?|\/\*[\s\S]*?\*\/)+/, "")
+      .trim();
+    if (!trimmed) return [];
+
+    const ddl = DDL.exec(trimmed);
+    if (ddl) {
+      return [
+        {
+          verb: ddl[1].toUpperCase(),
+          objectKind: ddl[2].toUpperCase(),
+          objectName: ddl[3],
+        },
+      ];
+    }
+
+    const verb = /^[a-z]+/i.exec(trimmed)?.[0]?.toUpperCase();
+    return verb ? [{ verb }] : [];
+  });
 }
 
 export function quoteIdent(name: string): string {

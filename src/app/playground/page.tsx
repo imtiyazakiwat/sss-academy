@@ -3,7 +3,6 @@ import Link from "next/link";
 
 import { JsonLd } from "@/components/JsonLd";
 import { Reveal } from "@/components/motion/Reveal";
-import { CtaBand } from "@/components/site/CtaBand";
 import { PageHero } from "@/components/site/PageHero";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
 import { Container, Eyebrow, Section } from "@/components/ui/Section";
@@ -83,15 +82,15 @@ export default function PlaygroundHubPage() {
             {[
               {
                 title: "Every result is genuine",
-                body: "Queries execute against an actual SQLite engine. Row counts, error messages and query plans come from the database, not from a script written to look convincing.",
+                body: "Queries execute against an actual SQLite engine. Row counts, error messages and every relationship on the schema map are read from the database, not from a script written to look convincing.",
               },
               {
                 title: "The data is dirty on purpose",
                 body: "The source feed has nulls, duplicates, an orphan key, two date formats and a number with a comma in it. Each defect maps to a check in the validation lab.",
               },
               {
-                title: "Reset takes one click",
-                body: "Break anything you like. Reset DB rebuilds all 18 tables from the seed script, which is what makes this usable in front of a live class.",
+                title: "It works like an editor",
+                body: "Resizable panes, a zoomable schema canvas, light and dark themes, and a Reset DB button that rebuilds all 18 tables from the seed script — so you can break anything in front of a live class.",
               },
             ].map((item, index) => (
               <Reveal key={item.title} delay={index * 70}>
@@ -223,12 +222,6 @@ export default function PlaygroundHubPage() {
           ) : null}
         </Container>
       </Section>
-
-      <CtaBand
-        eyebrow="From practice to placement"
-        title="The labs are free. The mentoring is the course."
-        body="Everything here is open, no sign-up. What the classroom adds is a trainer watching your query, real project scenarios, mock interviews and placement support."
-      />
 
       <JsonLd data={breadcrumbSchema([{ name: "Playground", href: "/playground" }])} />
     </>

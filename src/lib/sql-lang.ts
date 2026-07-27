@@ -221,6 +221,21 @@ export function formatSql(sql: string): string {
   let depth = 0;
   let atLineStart = true;
 
+  /**
+   * What each open bracket is for.
+   *
+   *   inline — a function call or a type width: `SUM(amount)`, `VARCHAR(50)`
+   *   block  — a subquery, which gets its own indented lines
+   *   list   — a definition list, which breaks after every comma
+   *
+   * Without the distinction a pasted one-line CREATE TABLE stayed one line
+   * however many times you pressed Format, which is the whole reason anyone
+   * reaches for the formatter after pasting.
+   */
+  const parens: ("inline" | "block" | "list")[] = [];
+  /** Set when a statement header wants its next bracket treated as a list. */
+  let listPending = false;
+
   const indent = () => "  ".repeat(Math.max(depth, 0));
   const newline = () => {
     out = out.replace(/[ \t]+$/, "");
@@ -262,19 +277,38 @@ export function formatSql(sql: string): string {
     }
 
     if (value === "(") {
-      write("(", !atLineStart && !/[(,]$/.test(out.trimEnd()));
-      // Only a subquery gets its own indented block; a function call stays put.
+      // A call or a type width binds tight to the name before it: SUM(amount),
+      // VARCHAR(50). Everything else reads better with a space: VALUES (…).
+      const previous = words[i - 1];
+      // A definition list always takes a space — `CREATE TABLE t (` — even
+      // though the tokeniser sees `t(` and calls it a function.
+      const tight =
+        !listPending &&
+        (previous?.kind === "function" || previous?.kind === "type");
+      write("(", !tight && !atLineStart && !/\($/.test(out.trimEnd()));
+
       const next = words[i + 1];
-      if (next && ["SELECT", "WITH", "VALUES"].includes(next.value.toUpperCase())) {
+      const isSubquery =
+        next && ["SELECT", "WITH", "VALUES"].includes(next.value.toUpperCase());
+
+      if (listPending) {
+        parens.push("list");
+        listPending = false;
         depth += 1;
         newline();
+      } else if (isSubquery) {
+        parens.push("block");
+        depth += 1;
+        newline();
+      } else {
+        parens.push("inline");
       }
       continue;
     }
 
     if (value === ")") {
-      const previousWasBlock = out.trimEnd().endsWith(")") === false && depth > 0;
-      if (previousWasBlock && out.includes("\n")) {
+      // Close on its own line only if this bracket opened one.
+      if (parens.pop() !== "inline") {
         depth = Math.max(depth - 1, 0);
         newline();
       }
@@ -284,6 +318,8 @@ export function formatSql(sql: string): string {
 
     if (value === ";") {
       write(";", false);
+      parens.length = 0;
+      listPending = false;
       if (i < words.length - 1) {
         depth = 0;
         newline();
@@ -294,10 +330,26 @@ export function formatSql(sql: string): string {
 
     if (value === ",") {
       write(",", false);
+      // One column, constraint or tuple per line inside a definition list.
+      if (parens[parens.length - 1] === "list") newline();
       continue;
     }
 
     if (token.kind === "keyword") {
+      // CREATE or ALTER TABLE: the next top-level bracket is a column list, so
+      // it breaks one per line. Checked on TABLE rather than on CREATE so that
+      // `CREATE TEMP TABLE` and `IF NOT EXISTS` need no special casing. Index
+      // and view brackets are left inline — they are short by nature.
+      if (
+        value === "TABLE" &&
+        parens.length === 0 &&
+        words
+          .slice(Math.max(0, i - 3), i)
+          .some((word) => ["CREATE", "ALTER"].includes(word.value.toUpperCase()))
+      ) {
+        listPending = true;
+      }
+
       const major = matchPhrase(i, MAJOR_KEYWORDS);
       if (major) {
         if (out.trim()) newline();

@@ -8,9 +8,9 @@ import { cn } from "@/lib/cn";
 export type RowFlag = "bad" | "warn" | "good" | null;
 
 const ROW_FLAG: Record<"bad" | "warn" | "good", string> = {
-  bad: "bg-ember-500/12 hover:bg-ember-500/20",
-  warn: "bg-amber-400/10 hover:bg-amber-400/16",
-  good: "bg-mint-500/10 hover:bg-mint-500/16",
+  bad: "bg-pg-rose-soft",
+  warn: "bg-pg-gold-soft",
+  good: "bg-pg-sky-soft",
 };
 
 export interface ResultTableProps {
@@ -19,16 +19,14 @@ export interface ResultTableProps {
   /** Flags a whole row. Return null to leave it neutral. */
   flagRow?: (row: SqlValue[], columns: string[], index: number) => RowFlag;
   /** Flags one cell — used to point at the specific offending value. */
-  flagCell?: (
-    value: SqlValue,
-    column: string,
-    row: SqlValue[],
-  ) => RowFlag;
+  flagCell?: (value: SqlValue, column: string, row: SqlValue[]) => RowFlag;
   /** Rendered when there is nothing to show yet. */
   empty?: string;
   maxRows?: number;
   /** Adds a pulse to rows flagged since the last run. */
   animate?: boolean;
+  /** Fills its container instead of capping at 22rem. For dock and pane use. */
+  fill?: boolean;
   className?: string;
 }
 
@@ -47,6 +45,7 @@ export function ResultTable({
   empty = "Run a query to see rows here.",
   maxRows = 200,
   animate = false,
+  fill = false,
   className,
 }: ResultTableProps) {
   const rows = useMemo(
@@ -59,7 +58,7 @@ export function ResultTable({
       <div
         role="alert"
         className={cn(
-          "rounded-xl border border-ember-500/35 bg-ember-500/10 px-4 py-3 font-mono text-[0.8125rem] leading-relaxed text-ember-200",
+          "animate-pg-fade-in rounded-xl border border-pg-rose/40 bg-pg-rose-soft px-4 py-3 font-mono text-[0.8125rem] leading-relaxed text-pg-rose",
           className,
         )}
       >
@@ -70,7 +69,7 @@ export function ResultTable({
 
   if (!set) {
     return (
-      <p className={cn("px-1 py-6 text-sm text-ink-400", className)}>{empty}</p>
+      <p className={cn("px-1 py-6 text-sm text-pg-dim", className)}>{empty}</p>
     );
   }
 
@@ -78,12 +77,12 @@ export function ResultTable({
     return (
       <div
         className={cn(
-          "rounded-xl border border-white/10 bg-white/[0.03] px-4 py-6 text-center",
+          "animate-pg-fade-in rounded-xl border border-pg-line bg-pg-raised px-4 py-6 text-center",
           className,
         )}
       >
-        <p className="text-sm font-medium text-mint-100">Zero rows returned.</p>
-        <p className="mt-1 text-xs text-ink-400">
+        <p className="text-sm font-medium text-pg-sky">Zero rows returned.</p>
+        <p className="mt-1 text-xs text-pg-dim">
           For a validation query that is usually the result you want.
         </p>
       </div>
@@ -93,14 +92,25 @@ export function ResultTable({
   const truncated = set.values.length - rows.length;
 
   return (
-    <div className={cn("overflow-hidden rounded-xl border border-white/10", className)}>
-      <div className="max-h-[22rem] overflow-auto">
+    <div
+      className={cn(
+        "flex flex-col overflow-hidden rounded-xl border border-pg-line bg-pg-surface",
+        fill && "h-full min-h-0",
+        className,
+      )}
+    >
+      <div
+        className={cn(
+          "pg-scroll overflow-auto",
+          fill ? "min-h-0 flex-1" : "max-h-[22rem]",
+        )}
+      >
         <table className="w-full border-collapse text-left font-mono text-[0.8125rem]">
           <thead className="sticky top-0 z-10">
-            <tr className="bg-navy-900">
+            <tr className="bg-pg-raised">
               <th
                 scope="col"
-                className="w-10 border-b border-white/10 px-3 py-2 text-right text-[0.6875rem] font-medium text-ink-500"
+                className="w-10 border-b border-pg-line px-3 py-2 text-right text-[0.6875rem] font-medium text-pg-faint"
               >
                 #
               </th>
@@ -108,7 +118,7 @@ export function ResultTable({
                 <th
                   key={column}
                   scope="col"
-                  className="border-b border-white/10 px-3 py-2 text-[0.75rem] font-medium whitespace-nowrap text-navy-100"
+                  className="border-b border-pg-line px-3 py-2 text-[0.75rem] font-medium whitespace-nowrap text-pg-gold"
                 >
                   {column}
                 </th>
@@ -122,12 +132,22 @@ export function ResultTable({
                 <tr
                   key={rowIndex}
                   className={cn(
-                    "border-b border-white/6 transition-colors last:border-b-0",
-                    flag ? ROW_FLAG[flag] : "hover:bg-white/[0.04]",
-                    animate && flag === "bad" && "animate-[pulse-bad_1.4s_ease-out_2]",
+                    "border-b border-pg-line/60 transition-colors last:border-b-0",
+                    flag ? ROW_FLAG[flag] : "hover:bg-pg-hover",
+                    animate &&
+                      flag === "bad" &&
+                      "animate-[pulse-bad_1.4s_ease-out_2]",
                   )}
+                  // Staggered only over the first screenful; past that it is noise.
+                  style={
+                    animate && rowIndex < 14
+                      ? {
+                          animation: `pg-row-in 0.32s var(--ease-out-expo) ${rowIndex * 18}ms both`,
+                        }
+                      : undefined
+                  }
                 >
-                  <td className="px-3 py-1.5 text-right text-[0.6875rem] text-ink-500">
+                  <td className="px-3 py-1.5 text-right text-[0.6875rem] text-pg-faint">
                     {rowIndex + 1}
                   </td>
                   {row.map((value, cellIndex) => {
@@ -140,13 +160,13 @@ export function ResultTable({
                         className={cn(
                           "px-3 py-1.5 whitespace-nowrap",
                           typeof value === "number"
-                            ? "text-right tabular-nums text-ember-100"
-                            : "text-ink-100",
-                          isNull && "text-ink-500 italic",
+                            ? "text-right tabular-nums text-pg-sky"
+                            : "text-pg-text",
+                          isNull && "text-pg-faint italic",
                           cellFlag === "bad" &&
-                            "rounded bg-ember-500/25 font-medium text-white",
-                          cellFlag === "warn" && "bg-amber-400/20 text-white",
-                          cellFlag === "good" && "bg-mint-500/20 text-white",
+                            "bg-pg-rose-soft font-medium text-pg-rose",
+                          cellFlag === "warn" && "bg-pg-gold-soft text-pg-gold",
+                          cellFlag === "good" && "bg-pg-sky-soft text-pg-sky",
                         )}
                       >
                         {formatCell(value)}
@@ -160,11 +180,11 @@ export function ResultTable({
         </table>
       </div>
 
-      <div className="flex items-center justify-between gap-4 border-t border-white/10 bg-white/[0.02] px-3 py-1.5 text-[0.6875rem] text-ink-400">
+      <div className="flex shrink-0 items-center justify-between gap-4 border-t border-pg-line bg-pg-raised px-3 py-1.5 text-[0.6875rem] text-pg-dim">
         <span>
           {set.values.length.toLocaleString("en-IN")}{" "}
-          {set.values.length === 1 ? "row" : "rows"} ·{" "}
-          {set.columns.length} {set.columns.length === 1 ? "column" : "columns"}
+          {set.values.length === 1 ? "row" : "rows"} · {set.columns.length}{" "}
+          {set.columns.length === 1 ? "column" : "columns"}
         </span>
         {truncated > 0 ? (
           <span>Showing first {maxRows.toLocaleString("en-IN")}</span>

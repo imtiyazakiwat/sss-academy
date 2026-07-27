@@ -36,6 +36,9 @@ export interface LogLine {
 
 export type DockTab = "result" | "console" | "quiz" | "notes";
 
+/** Which surface the centre pane is showing: the lab, or the database map. */
+export type Stage = "lab" | "map";
+
 export interface PlaygroundState {
   status: "loading" | "ready" | "error";
   error: string | null;
@@ -45,6 +48,34 @@ export interface PlaygroundState {
   outcome: QueryOutcome | null;
   resetting: boolean;
   dockTab: DockTab;
+  stage: Stage;
+  /** The last statement a lab ran on the learner's behalf, for the schema map. */
+  lastSql: string | null;
+  /** Incremented per run, so the map can re-trigger its pulse on a repeat. */
+  runCount: number;
+  /**
+   * Whether loading a worked example or a table also executes it. Off by
+   * default: a lab that runs SQL the moment you glance at an example takes the
+   * decision to execute away from the learner, and in a classroom it fires
+   * before the teacher has finished reading the statement out.
+   */
+  autoRun: boolean;
+  /**
+   * Editor contents, keyed by lab slug.
+   *
+   * Lifted out of the lab component so a sibling surface — the schema map's "To
+   * editor", for instance — can write to the editor without a token-and-effect
+   * dance, and so switching labs and coming back does not lose a half-written
+   * statement. Keyed rather than shared because each lab starts from its own
+   * worked example.
+   */
+  editorSql: Record<string, string>;
+  /**
+   * The lab whose editor is holding SQL that was loaded but deliberately not
+   * run. Keyed by slug rather than a bare boolean so the "not run yet" hint
+   * cannot follow the learner into a different lab.
+   */
+  stagedFor: string | null;
 }
 
 export interface RunOptions {
@@ -64,7 +95,15 @@ const INITIAL: PlaygroundState = Object.freeze({
   outcome: null,
   resetting: false,
   dockTab: "result",
+  stage: "lab",
+  lastSql: null,
+  runCount: 0,
+  autoRun: false,
+  editorSql: {},
+  stagedFor: null,
 });
+
+const AUTORUN_KEY = "sss-pg-autorun";
 
 /** Console cap — a long teaching session can run hundreds of statements. */
 const MAX_LOGS = 300;
@@ -112,6 +151,54 @@ export function clearLogs(): void {
 
 export function setDockTab(dockTab: DockTab): void {
   set({ dockTab });
+}
+
+export function setStage(stage: Stage): void {
+  set({ stage });
+}
+
+/** Typing in the editor. Clears the staged flag: this is now the learner's text. */
+export function setEditorSql(slug: string, sql: string): void {
+  set({ editorSql: { ...state.editorSql, [slug]: sql }, stagedFor: null });
+}
+
+/**
+ * Loads a statement into a lab's editor and brings that editor forward —
+ * sending SQL to a pane the learner cannot see would be a dead end.
+ *
+ * Whether it also executes is the learner's setting, not ours. With auto-run
+ * off the statement waits, which is the difference between offering an example
+ * and running one on somebody's behalf.
+ */
+export function loadEditorSql(slug: string, sql: string): void {
+  set({
+    editorSql: { ...state.editorSql, [slug]: sql },
+    stage: "lab",
+    stagedFor: state.autoRun ? null : slug,
+  });
+  if (state.autoRun) run(sql);
+}
+
+export function setAutoRun(autoRun: boolean): void {
+  set({ autoRun });
+  try {
+    localStorage.setItem(AUTORUN_KEY, autoRun ? "1" : "0");
+  } catch {
+    // Preference still applies for this session.
+  }
+}
+
+/**
+ * Reads persisted preferences after mount. Kept out of the initial snapshot so
+ * the server and the first client render agree.
+ */
+export function restorePreferences(): void {
+  try {
+    const stored = localStorage.getItem(AUTORUN_KEY);
+    if (stored === "1") set({ autoRun: true });
+  } catch {
+    // Nothing to restore.
+  }
 }
 
 async function build(mode: "initial" | "reset"): Promise<void> {
@@ -167,6 +254,9 @@ export function run(sql: string, options: RunOptions = {}): QueryOutcome | null 
 
   if (!options.silent) {
     patch.outcome = outcome;
+    patch.lastSql = trimmed;
+    patch.runCount = state.runCount + 1;
+    patch.stagedFor = null;
     if (!options.keepTab) patch.dockTab = "result";
   }
   if (!outcome.error && !readOnly) {

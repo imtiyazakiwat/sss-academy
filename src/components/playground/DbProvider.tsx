@@ -9,19 +9,25 @@ import {
   getSnapshot,
   log,
   read,
+  loadEditorSql,
   resetDatabase,
+  restorePreferences,
   run,
+  setAutoRun,
   setDockTab,
+  setEditorSql,
+  setStage,
   subscribe,
   type DockTab,
   type LogKind,
   type LogLine,
   type PlaygroundState,
   type RunOptions,
+  type Stage,
 } from "@/lib/playground-store";
 import type { ResultSet } from "@/lib/sqlite";
 
-export type { DockTab, LogKind, LogLine, RunOptions };
+export type { DockTab, LogKind, LogLine, RunOptions, Stage };
 
 /**
  * Boots the shared SQLite instance for the playground subtree.
@@ -33,6 +39,7 @@ export type { DockTab, LogKind, LogLine, RunOptions };
  */
 export function DbProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
+    restorePreferences();
     ensureDatabase();
   }, []);
 
@@ -41,6 +48,10 @@ export function DbProvider({ children }: { children: ReactNode }) {
 
 interface DbApi extends PlaygroundState {
   setDockTab: (tab: DockTab) => void;
+  setStage: (stage: Stage) => void;
+  setAutoRun: (autoRun: boolean) => void;
+  setEditorSql: (slug: string, sql: string) => void;
+  loadEditorSql: (slug: string, sql: string) => void;
   run: (sql: string, options?: RunOptions) => ReturnType<typeof run>;
   read: (sql: string) => ResultSet | null;
   log: (kind: LogKind, text: string) => void;
@@ -59,6 +70,10 @@ export function useDb(): DbApi {
       ...state,
       running: state.resetting,
       setDockTab,
+      setStage,
+      setAutoRun,
+      setEditorSql,
+      loadEditorSql,
       run,
       read,
       log,
