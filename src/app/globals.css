@@ -134,6 +134,16 @@
   }
 }
 
+/* Draws the eye to a row a validation check just failed. */
+@keyframes pulse-bad {
+  0% {
+    background-color: rgb(242 101 34 / 0.34);
+  }
+  100% {
+    background-color: rgb(242 101 34 / 0.12);
+  }
+}
+
 /* ============================================================
    Base
    ============================================================ */
@@ -273,5 +283,28 @@
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
+  }
+}
+
+/* ============================================================
+   Playground app shell
+   ============================================================ */
+
+/* The playground is a full-height application, not a marketing page: it owns the
+   viewport and manages its own internal scrolling. The root layout renders the
+   footer, the mobile CTA bar and the notice bar for every route, and a nested
+   layout cannot remove nodes a parent rendered — so the shell announces itself
+   with a data attribute and this rule stands them down. Cheaper and far less
+   fragile than duplicating the root layout for one route. */
+@layer base {
+  body:has([data-playground-shell]) > footer,
+  body:has([data-playground-shell]) [data-mobile-cta],
+  body:has([data-playground-shell]) [data-notice-bar] {
+    display: none;
+  }
+
+  /* The shell sets its own height; the page itself must never scroll. */
+  body:has([data-playground-shell]) {
+    overflow: hidden;
   }
 }

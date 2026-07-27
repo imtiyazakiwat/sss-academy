@@ -13,6 +13,7 @@ import { cn } from "@/lib/cn";
 const links: { label: string; href: string; hasMenu?: boolean }[] = [
   { label: "Home", href: "/" },
   { label: "Courses", href: "/courses", hasMenu: true },
+  { label: "Playground", href: "/playground" },
   { label: "Placements", href: "/placements" },
   { label: "About Us", href: "/about" },
   { label: "Contact", href: "/contact" },

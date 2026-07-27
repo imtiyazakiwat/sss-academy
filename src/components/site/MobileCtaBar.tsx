@@ -28,6 +28,7 @@ export function MobileCtaBar() {
 
   return (
     <div
+      data-mobile-cta=""
       className={cn(
         "fixed inset-x-0 bottom-0 z-40 border-t border-ink-200 bg-white/90 px-4 pt-3 backdrop-blur-xl transition-transform duration-400 ease-[var(--ease-out-expo)] lg:hidden",
         visible ? "translate-y-0" : "translate-y-full",
