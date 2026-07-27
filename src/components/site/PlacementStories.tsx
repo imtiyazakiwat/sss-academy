@@ -121,23 +121,19 @@ export function PlacementStories({ stories }: { stories: Placement[] }) {
 
   return (
     <div>
-      <div className="flex flex-col gap-6 border-b border-ink-200 pb-7 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-[0.6875rem] font-semibold tracking-[0.15em] text-ember-700 uppercase">
-            Learner voices
-          </p>
-          <h2 className="text-headline mt-3 max-w-2xl text-navy-950">
-            Different starting points. Real progress.
-          </h2>
-          <p className="mt-3 max-w-2xl leading-7 text-ink-600">
-            Browse reflections on training, practical work, interview preparation,
-            and the support learners found most useful.
-          </p>
-        </div>
-        <p
-          className="shrink-0 font-mono text-xs text-ink-500"
-          aria-live="polite"
-        >
+      <div className="flex flex-col items-center border-b border-ink-200 pb-8 text-center">
+        <p className="flex items-center gap-2.5 text-[0.6875rem] font-semibold tracking-[0.15em] text-ember-700 uppercase">
+          <span aria-hidden="true" className="h-px w-6 bg-ember-700/60" />
+          Learner voices
+        </p>
+        <h2 className="text-headline sm:text-display mt-4 max-w-4xl text-navy-950">
+          Different starting points. Real progress.
+        </h2>
+        <p className="mt-4 max-w-2xl leading-7 text-ink-600">
+          Browse reflections on training, practical work, interview preparation,
+          and the support learners found most useful.
+        </p>
+        <p className="mt-5 font-mono text-xs text-ink-500" aria-live="polite">
           Showing {visible.length} of {filtered.length}
         </p>
       </div>

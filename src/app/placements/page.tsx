@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 
 import { JsonLd } from "@/components/JsonLd";
 import { CtaBand } from "@/components/site/CtaBand";
-import { PageHero } from "@/components/site/PageHero";
 import { PlacementStories } from "@/components/site/PlacementStories";
+import { PlacementsHero } from "@/components/site/PlacementsHero";
 import { Container, Section } from "@/components/ui/Section";
 import { placements } from "@/content/placements";
 import { site } from "@/content/site";
@@ -34,41 +34,11 @@ const learnerThemes = [
 export default function PlacementsPage() {
   return (
     <>
-      <PageHero
-        variant="proof"
+      <PlacementsHero
         eyebrow="Learner outcomes"
-        title="Careers built through practice."
-        description="These learners arrived with different backgrounds and goals. What connects their stories is practical work, consistent guidance and the confidence to take a meaningful next step."
-        breadcrumb={[{ name: "Placements", href: "/placements" }]}
-        aside={
-          <article className="border border-navy-900/15 bg-[#fffdf8] shadow-[8px_8px_0_0_#d95d39]">
-            <header className="border-b border-ink-200 px-5 py-4 sm:px-6">
-              <p className="text-[0.6875rem] font-semibold tracking-[0.14em] text-ember-700 uppercase">
-                What learners mention most
-              </p>
-            </header>
-            <ol className="divide-y divide-ink-200 px-5 sm:px-6">
-              {learnerThemes.map((theme, index) => (
-                <li key={theme.title} className="grid grid-cols-[2rem_1fr] gap-3 py-4">
-                  <span className="font-mono text-xs font-semibold text-navy-400">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold text-navy-950">
-                      {theme.title}
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-ink-500">
-                      {theme.body}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-            <footer className="border-t border-ink-200 bg-[#f8f3e9] px-5 py-3 text-xs text-ink-500 sm:px-6">
-              {placements.length} learner reflections, shared in their own words.
-            </footer>
-          </article>
-        }
+        breadcrumbLabel="Placements"
+        themes={learnerThemes}
+        footnote={`${placements.length} learner reflections, shared in their own words.`}
       />
 
       <Section className="py-16 sm:py-24">
