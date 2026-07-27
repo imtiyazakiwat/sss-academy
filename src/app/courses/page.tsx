@@ -6,7 +6,7 @@ import { CourseCard } from "@/components/site/CourseCard";
 import { CtaBand } from "@/components/site/CtaBand";
 import { PageHero } from "@/components/site/PageHero";
 import { Container, Section } from "@/components/ui/Section";
-import { courses, trackLabels, type CourseTrack } from "@/content/courses";
+import { courses, type CourseTrack } from "@/content/courses";
 import { breadcrumbSchema, courseListSchema } from "@/lib/schema";
 
 export const metadata: Metadata = {
@@ -25,13 +25,12 @@ const trackOrder: CourseTrack[] = [
 ];
 
 export default function CoursesPage() {
-  const grouped = trackOrder
-    .map((track) => ({
-      track,
-      label: trackLabels[track],
-      items: courses.filter((c) => c.track === track),
-    }))
-    .filter((group) => group.items.length > 0);
+  // One continuous grid rather than a section per track: grouping left every
+  // short track with a half-empty row and stacked ~210px of section padding
+  // between rows of cards. The track is still on each card.
+  const ordered = trackOrder.flatMap((track) =>
+    courses.filter((course) => course.track === track),
+  );
 
   return (
     <>
@@ -51,33 +50,32 @@ export default function CoursesPage() {
         }
       />
 
-      {grouped.map((group, groupIndex) => (
-        <Section
-          key={group.track}
-          tone={groupIndex % 2 === 1 ? "muted" : "light"}
-          className="py-16 sm:py-20"
-        >
-          <Container>
-            <Reveal className="flex items-baseline justify-between gap-6 border-b border-ink-200 pb-5">
-              <h2 className="text-title text-navy-950 sm:text-2xl">
-                {group.label}
-              </h2>
-              <span className="font-mono text-xs text-ink-400">
-                {group.items.length}{" "}
-                {group.items.length === 1 ? "course" : "courses"}
-              </span>
-            </Reveal>
+      <Section className="py-14 sm:py-16">
+        <Container>
+          <Reveal className="flex items-baseline justify-between gap-6 border-b border-ink-200 pb-5">
+            <h2 className="text-title text-navy-950 sm:text-2xl">
+              Every track we teach
+            </h2>
+            <span className="font-mono text-xs text-ink-400">
+              {courses.length} courses
+            </span>
+          </Reveal>
 
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {group.items.map((course, i) => (
-                <Reveal key={course.slug} delay={(i % 3) * 70} scale={0.98}>
-                  <CourseCard course={course} className="h-full" />
-                </Reveal>
-              ))}
-            </div>
-          </Container>
-        </Section>
-      ))}
+          <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {ordered.map((course, i) => (
+              <Reveal
+                key={course.slug}
+                delay={(i % 3) * 70}
+                scale={0.98}
+                threshold={0.05}
+                className="h-full"
+              >
+                <CourseCard course={course} className="h-full" />
+              </Reveal>
+            ))}
+          </div>
+        </Container>
+      </Section>
 
       <CtaBand
         eyebrow="Still deciding"
