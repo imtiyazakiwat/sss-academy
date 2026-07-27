@@ -1,26 +1,277 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ============================================================
+   SSS Academy — design tokens
+   Brand: navy (authority/trust) + orange (action/energy)
+   ============================================================ */
+
+@theme {
+  /* Brand ------------------------------------------------- */
+  --color-navy-50: #eef3fb;
+  --color-navy-100: #d8e3f5;
+  --color-navy-200: #b3c7e8;
+  --color-navy-300: #7f9fd4;
+  --color-navy-400: #4d74b5;
+  --color-navy-500: #2f5596;
+  --color-navy-600: #21427c;
+  --color-navy-700: #1b3563;
+  --color-navy-800: #142748;
+  --color-navy-900: #0d1a31;
+  --color-navy-950: #070f1d;
+
+  /* Violet carries the headline and most UI accents; navy stays for structure
+     and dark sections, ember stays for the single primary action. */
+  --color-violet-50: #f5f2ff;
+  --color-violet-100: #ebe5ff;
+  --color-violet-200: #d9cfff;
+  --color-violet-300: #bda9ff;
+  --color-violet-400: #9d7bff;
+  --color-violet-500: #7f4dfb;
+  --color-violet-600: #6c2bef;
+  --color-violet-700: #5b1fd1;
+  --color-violet-800: #4a1ba8;
+  --color-violet-900: #3d1a85;
+
+  --color-mint-50: #eefaf3;
+  --color-mint-100: #d5f4e2;
+  --color-mint-500: #17a35c;
+  --color-mint-600: #0f8a4c;
+  --color-mint-700: #0c6f3e;
+
+  --color-ember-50: #fff4ed;
+  --color-ember-100: #ffe4d3;
+  --color-ember-200: #ffc5a5;
+  --color-ember-300: #ff9d6d;
+  --color-ember-400: #fb7333;
+  /* 500 is the logo's orange. It only clears 3.15:1 on white, so it is reserved
+     for graphics, fills and glows — never for small text or button labels. */
+  --color-ember-500: #f26522;
+  /* 600 is darkened from the brand orange to reach 4.57:1 on white, which is
+     what lets it carry text and primary button labels at AA. */
+  --color-ember-600: #d24509;
+  --color-ember-700: #b4380f;
+  --color-ember-800: #8f2e13;
+  --color-ember-900: #742813;
+
+  /* Neutrals (slightly cool, keeps navy coherent) --------- */
+  --color-ink-50: #f7f8fa;
+  --color-ink-100: #eef0f4;
+  --color-ink-200: #dfe3ea;
+  --color-ink-300: #c3cad6;
+  --color-ink-400: #8f9aac;
+  --color-ink-500: #647085;
+  --color-ink-600: #4b5666;
+  --color-ink-700: #384150;
+  --color-ink-800: #232b38;
+  --color-ink-900: #141a24;
+
+  /* Type ------------------------------------------------- */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-code), ui-monospace, monospace;
+
+  --text-display-xl: 4.5rem;
+  --text-display-xl--line-height: 1.02;
+  --text-display-xl--letter-spacing: -0.035em;
+  --text-display-xl--font-weight: 600;
+
+  --text-display: 3.25rem;
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.03em;
+  --text-display--font-weight: 600;
+
+  --text-headline: 2.25rem;
+  --text-headline--line-height: 1.12;
+  --text-headline--letter-spacing: -0.025em;
+  --text-headline--font-weight: 600;
+
+  --text-title: 1.375rem;
+  --text-title--line-height: 1.25;
+  --text-title--letter-spacing: -0.015em;
+  --text-title--font-weight: 600;
+
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1;
+  --text-eyebrow--letter-spacing: 0.14em;
+  --text-eyebrow--font-weight: 600;
+
+  /* Elevation — soft, navy-tinted, never grey mush -------- */
+  --shadow-subtle: 0 1px 2px 0 rgb(13 26 49 / 0.04), 0 1px 3px 0 rgb(13 26 49 / 0.06);
+  --shadow-card: 0 1px 2px rgb(13 26 49 / 0.04), 0 8px 24px -8px rgb(13 26 49 / 0.1);
+  --shadow-lift: 0 2px 4px rgb(13 26 49 / 0.05), 0 18px 40px -12px rgb(13 26 49 / 0.18);
+  --shadow-glow: 0 20px 60px -20px rgb(242 101 34 / 0.45);
+
+  /* Motion ----------------------------------------------- */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-soft: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --animate-marquee: marquee 42s linear infinite;
+  --animate-shimmer: shimmer 1.6s var(--ease-in-out-soft) infinite;
+  --animate-float: float 7s ease-in-out infinite;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0);
+  }
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+
+@layer base {
+  :root {
+    --header-h: 4.5rem;
+    color-scheme: light;
+  }
+
+  * {
+    border-color: var(--color-ink-200);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+  }
+
+  body {
+    background-color: #fff;
+    color: var(--color-ink-800);
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  /* Visible, on-brand focus ring for keyboard users only */
+  :focus-visible {
+    outline: 2px solid var(--color-ember-500);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--color-navy-900);
+    color: #fff;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Respect reduced-motion globally: kill transforms/animations */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+/* ============================================================
+   Utilities
+   ============================================================ */
+
+@utility grid-lines {
+  background-image:
+    linear-gradient(to right, rgb(13 26 49 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(13 26 49 / 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+@utility grid-lines-dark {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+/* Fades a mask out at the edges — used for marquees & grids */
+@utility mask-edges {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8%,
+    black 92%,
+    transparent
+  );
+}
+
+@utility mask-fade-b {
+  mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+}
+
+@utility text-gradient-brand {
+  background-image: linear-gradient(
+    100deg,
+    var(--color-violet-700) 0%,
+    var(--color-violet-500) 55%,
+    var(--color-violet-400) 100%
+  );
+  background-clip: text;
+  color: transparent;
+}
+
+/* The hero's sweeping right-hand edge. An ellipse clip is used rather than an
+   SVG path so it scales smoothly across breakpoints with no extra request. */
+@utility hero-sweep {
+  clip-path: ellipse(76% 108% at 76% 26%);
+}
+
+@utility dot-grid {
+  background-image: radial-gradient(
+    rgb(108 43 239 / 0.18) 1px,
+    transparent 1px
+  );
+  background-size: 16px 16px;
+}
+
+/* 3D scene helpers — cheap, GPU-composited only */
+@utility scene-3d {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+@utility layer-3d {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+@utility hide-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
