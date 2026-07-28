@@ -2,12 +2,12 @@ import { Reveal } from "@/components/motion/Reveal";
 import { PlacementCard } from "@/components/site/PlacementCard";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
 import { Container, Section, SectionHeader } from "@/components/ui/Section";
-import { placements } from "@/content/placements";
+import { placements, placementsByPackage } from "@/content/placements";
 
 /** Learner voices shown in two calm, continuously scrolling rows. */
 export function Proof() {
-  // Split placements into two rows; pad each to at least 6 cards
-  const all = placements;
+  // Highest packages lead each row; split into two for the opposing marquees
+  const all = placementsByPackage;
   const half = Math.ceil(all.length / 2);
   const row1 = all.slice(0, half);
   const row2 = all.slice(half);
@@ -98,7 +98,7 @@ function MarqueeGroup({
   items,
   clone = false,
 }: {
-  items: (typeof placementsByPackage)[number][];
+  items: (typeof placements)[number][];
   clone?: boolean;
 }) {
   return (
