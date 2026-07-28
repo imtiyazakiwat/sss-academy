@@ -3,7 +3,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 
 import { useDb, useQuery } from "@/components/playground/DbProvider";
-import { LabIntro, Panel, PillButton } from "@/components/playground/LabChrome";
+import { LabIntro, LabScroll, Panel, PillButton } from "@/components/playground/LabChrome";
 import { ResultTable, type RowFlag } from "@/components/playground/ResultTable";
 import type { Lab } from "@/content/labs";
 
@@ -145,7 +145,7 @@ WHERE customer_id = ${customerId};`,
   const valueOptions = attribute === "city" ? cityOptions : SEGMENTS;
 
   return (
-    <div className="space-y-5">
+    <LabScroll>
       <LabIntro lab={lab} />
 
       <Panel
@@ -157,7 +157,7 @@ WHERE customer_id = ${customerId};`,
             <select
               value={customerId}
               onChange={(event) => setCustomerId(Number(event.target.value))}
-              className="w-full rounded-lg border border-white/12 bg-navy-950 px-3 py-2 text-[0.8125rem] text-ink-100"
+              className="w-full rounded-lg border border-pg-line-strong bg-pg-bg px-3 py-2 text-[0.8125rem] text-pg-text"
             >
               {(customers?.values ?? []).map((row) => (
                 <option key={String(row[0])} value={Number(row[0])}>
@@ -175,7 +175,7 @@ WHERE customer_id = ${customerId};`,
                 setAttribute(next);
                 setNewValue(next === "city" ? "Bengaluru" : "Corporate");
               }}
-              className="w-full rounded-lg border border-white/12 bg-navy-950 px-3 py-2 text-[0.8125rem] text-ink-100"
+              className="w-full rounded-lg border border-pg-line-strong bg-pg-bg px-3 py-2 text-[0.8125rem] text-pg-text"
             >
               <option value="city">city</option>
               <option value="segment">segment</option>
@@ -186,7 +186,7 @@ WHERE customer_id = ${customerId};`,
             <select
               value={newValue}
               onChange={(event) => setNewValue(event.target.value)}
-              className="w-full rounded-lg border border-white/12 bg-navy-950 px-3 py-2 text-[0.8125rem] text-ink-100"
+              className="w-full rounded-lg border border-pg-line-strong bg-pg-bg px-3 py-2 text-[0.8125rem] text-pg-text"
             >
               {valueOptions.map((option) => (
                 <option key={option} value={option}>
@@ -203,7 +203,7 @@ WHERE customer_id = ${customerId};`,
               min="2024-01-02"
               max="2026-12-31"
               onChange={(event) => setEffective(event.target.value)}
-              className="w-full rounded-lg border border-white/12 bg-navy-950 px-3 py-2 font-mono text-[0.8125rem] text-ink-100"
+              className="w-full rounded-lg border border-pg-line-strong bg-pg-bg px-3 py-2 font-mono text-[0.8125rem] text-pg-text"
             />
           </Field>
         </div>
@@ -213,20 +213,20 @@ WHERE customer_id = ${customerId};`,
             Apply change
           </PillButton>
 
-          <p className="text-[0.8125rem] text-ink-400">
+          <p className="text-[0.8125rem] text-pg-dim">
             {noChange ? (
-              <span className="text-amber-200">
+              <span className="text-pg-gold">
                 {attribute} is already {newValue} — change detection would find nothing
                 to do, so no new version is written.
               </span>
             ) : badDate ? (
-              <span className="text-amber-200">
+              <span className="text-pg-gold">
                 Effective date must be after {currentStart}, when the current version
                 opened.
               </span>
             ) : (
               <>
-                {currentValue || "—"} → <span className="text-white">{newValue}</span>{" "}
+                {currentValue || "—"} → <span className="text-pg-text">{newValue}</span>{" "}
                 from {effective}
               </>
             )}
@@ -252,10 +252,10 @@ WHERE customer_id = ${customerId};`,
             }
           />
           <div className="mt-3 grid gap-2.5 lg:grid-cols-2">
-            <pre className="overflow-x-auto rounded-lg bg-navy-950/70 p-3 font-mono text-[0.75rem] leading-relaxed text-ink-200">
+            <pre className="overflow-x-auto rounded-lg bg-pg-bg p-3 font-mono text-[0.75rem] leading-relaxed text-pg-text">
               {statements.type2Expire}
             </pre>
-            <pre className="overflow-x-auto rounded-lg bg-navy-950/70 p-3 font-mono text-[0.75rem] leading-relaxed text-ink-200">
+            <pre className="overflow-x-auto rounded-lg bg-pg-bg p-3 font-mono text-[0.75rem] leading-relaxed text-pg-text">
               {statements.type2Insert}
             </pre>
           </div>
@@ -266,7 +266,7 @@ WHERE customer_id = ${customerId};`,
           subtitle="One row, always current. History is unrecoverable."
         >
           <ResultTable set={type1} animate={justChanged} />
-          <pre className="mt-3 overflow-x-auto rounded-lg bg-navy-950/70 p-3 font-mono text-[0.75rem] leading-relaxed text-ink-200">
+          <pre className="mt-3 overflow-x-auto rounded-lg bg-pg-bg p-3 font-mono text-[0.75rem] leading-relaxed text-pg-text">
             {statements.type1}
           </pre>
         </Panel>
@@ -283,7 +283,7 @@ WHERE customer_id = ${customerId};`,
               column.startsWith("previous_") && value !== null ? "warn" : null
             }
           />
-          <pre className="mt-3 overflow-x-auto rounded-lg bg-navy-950/70 p-3 font-mono text-[0.75rem] leading-relaxed text-ink-200">
+          <pre className="mt-3 overflow-x-auto rounded-lg bg-pg-bg p-3 font-mono text-[0.75rem] leading-relaxed text-pg-text">
             {statements.type3}
           </pre>
         </Panel>
@@ -295,7 +295,7 @@ WHERE customer_id = ${customerId};`,
       >
         <label
           htmlFor="scd-timeline"
-          className="block font-mono text-[0.8125rem] text-white"
+          className="block font-mono text-[0.8125rem] text-pg-text"
         >
           As of {asOfDate}
         </label>
@@ -306,15 +306,15 @@ WHERE customer_id = ${customerId};`,
           max={TIMELINE.length - 1}
           value={timelineIndex}
           onChange={(event) => setTimelineIndex(Number(event.target.value))}
-          className="mt-2 w-full accent-ember-500"
+          className="mt-2 w-full accent-[var(--pg-primary)]"
         />
-        <div className="mt-1 flex justify-between font-mono text-[0.625rem] text-ink-500">
+        <div className="mt-1 flex justify-between font-mono text-[0.625rem] text-pg-faint">
           {[2024, 2025, 2026].map((year) => (
             <span key={year}>{year}</span>
           ))}
         </div>
 
-        <pre className="mt-3 overflow-x-auto rounded-lg bg-navy-950/70 p-3 font-mono text-[0.75rem] leading-relaxed text-ink-200">
+        <pre className="mt-3 overflow-x-auto rounded-lg bg-pg-bg p-3 font-mono text-[0.75rem] leading-relaxed text-pg-text">
           {`SELECT customer_id, customer_name, city, segment, start_date, end_date, version
 FROM dim_customer_scd
 WHERE '${asOfDate}' BETWEEN start_date AND end_date
@@ -330,20 +330,20 @@ ORDER BY customer_id;`}
             }}
           />
         </div>
-        <p className="mt-2 text-[0.8125rem] leading-relaxed text-ink-400">
+        <p className="mt-2 text-[0.8125rem] leading-relaxed text-pg-dim">
           Rows highlighted in green are on their second version or later — the
           dimension is returning what was true on {asOfDate}, not what is true today.
           Type 1 and Type 3 cannot answer this query at all.
         </p>
       </Panel>
-    </div>
+    </LabScroll>
   );
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[0.6875rem] uppercase tracking-[0.08em] text-ink-500">
+      <span className="mb-1.5 block text-[0.6875rem] uppercase tracking-[0.08em] text-pg-faint">
         {label}
       </span>
       {children}

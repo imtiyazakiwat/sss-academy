@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { useDb } from "@/components/playground/DbProvider";
-import { LabIntro, Panel, PillButton } from "@/components/playground/LabChrome";
+import { LabIntro, LabScroll, Panel, PillButton } from "@/components/playground/LabChrome";
 import { ResultTable } from "@/components/playground/ResultTable";
 import { SqlEditor } from "@/components/playground/SqlEditor";
 import { TableExplorer } from "@/components/playground/TableExplorer";
@@ -97,7 +97,7 @@ function compare(
 }
 
 export function ChallengeLab({ lab }: { lab: Lab }) {
-  const { run, read, running, status } = useDb();
+  const { run, read, running, status, setStage } = useDb();
   const schema = useSchema();
   const challenges = lab.challenges ?? [];
 
@@ -165,7 +165,7 @@ export function ChallengeLab({ lab }: { lab: Lab }) {
   const attemptCount = tries[index] ?? 0;
 
   return (
-    <div className="space-y-5">
+    <LabScroll>
       <LabIntro lab={lab} />
 
       <div className="grid gap-5 xl:grid-cols-12">
@@ -187,7 +187,7 @@ export function ChallengeLab({ lab }: { lab: Lab }) {
               </>
             }
           >
-            <p className="text-[0.9375rem] leading-relaxed text-white">
+            <p className="text-[0.9375rem] leading-relaxed text-pg-text">
               {challenge.prompt}
             </p>
 
@@ -200,20 +200,20 @@ export function ChallengeLab({ lab }: { lab: Lab }) {
                   {showSolution ? "Hide reference answer" : "Show reference answer"}
                 </PillButton>
               ) : (
-                <span className="text-[0.6875rem] text-ink-500">
+                <span className="text-[0.6875rem] text-pg-faint">
                   Reference answer unlocks after two attempts
                 </span>
               )}
             </div>
 
             {showHint ? (
-              <p className="mt-3 rounded-lg bg-violet-500/10 px-3.5 py-2.5 text-[0.8125rem] leading-relaxed text-violet-100">
+              <p className="mt-3 rounded-lg bg-pg-iris-soft px-3.5 py-2.5 text-[0.8125rem] leading-relaxed text-pg-iris">
                 {challenge.hint}
               </p>
             ) : null}
 
             {showSolution ? (
-              <pre className="mt-3 overflow-x-auto rounded-lg bg-navy-950/70 p-3 font-mono text-[0.75rem] leading-relaxed text-ink-200">
+              <pre className="mt-3 overflow-x-auto rounded-lg bg-pg-bg p-3 font-mono text-[0.75rem] leading-relaxed text-pg-text">
                 {challenge.solution}
               </pre>
             ) : null}
@@ -234,33 +234,33 @@ export function ChallengeLab({ lab }: { lab: Lab }) {
             <div
               className={cn(
                 "rounded-2xl border px-4 py-3.5",
-                attempt.status === "solved" && "border-mint-500/40 bg-mint-500/10",
-                attempt.status === "wrong" && "border-amber-400/40 bg-amber-400/8",
-                attempt.status === "error" && "border-ember-500/40 bg-ember-500/10",
+                attempt.status === "solved" && "border-pg-sky/45 bg-pg-sky-soft",
+                attempt.status === "wrong" && "border-pg-gold/40 bg-pg-gold-soft",
+                attempt.status === "error" && "border-pg-rose/45 bg-pg-rose-soft",
               )}
             >
               <p
                 className={cn(
                   "text-[0.9375rem] font-medium",
-                  attempt.status === "solved" && "text-mint-100",
-                  attempt.status === "wrong" && "text-amber-100",
-                  attempt.status === "error" && "text-ember-100",
+                  attempt.status === "solved" && "text-pg-sky",
+                  attempt.status === "wrong" && "text-pg-gold",
+                  attempt.status === "error" && "text-pg-rose",
                 )}
               >
                 {attempt.status === "solved" ? "Passed" : attempt.status === "error" ? "SQL error" : "Not yet"}
               </p>
-              <p className="mt-1 text-[0.8125rem] leading-relaxed text-ink-200">
+              <p className="mt-1 text-[0.8125rem] leading-relaxed text-pg-text">
                 {attempt.message}
               </p>
               {attempt.error ? (
-                <p className="mt-2 font-mono text-[0.75rem] text-ember-200">
+                <p className="mt-2 font-mono text-[0.75rem] text-pg-rose">
                   {attempt.error}
                 </p>
               ) : null}
 
               {attempt.expected ? (
                 <div className="mt-3">
-                  <p className="mb-1.5 text-[0.75rem] font-medium text-ink-300">
+                  <p className="mb-1.5 text-[0.75rem] font-medium text-pg-dim">
                     Expected result
                   </p>
                   <ResultTable set={attempt.expected} maxRows={30} />
@@ -283,18 +283,18 @@ export function ChallengeLab({ lab }: { lab: Lab }) {
                       className={cn(
                         "flex w-full items-start gap-2.5 rounded-lg px-3 py-2 text-left transition-colors",
                         itemIndex === index
-                          ? "bg-violet-500/20 text-white"
-                          : "text-ink-300 hover:bg-white/5 hover:text-white",
+                          ? "bg-pg-iris-soft text-pg-text"
+                          : "text-pg-dim hover:bg-pg-hover hover:text-pg-text",
                       )}
                     >
                       <span
                         aria-hidden="true"
                         className={cn(
                           "mt-1.5 size-1.5 shrink-0 rounded-full",
-                          state === "solved" && "bg-mint-500",
-                          state === "wrong" && "bg-amber-400",
-                          state === "error" && "bg-ember-500",
-                          !state && "bg-white/25",
+                          state === "solved" && "bg-pg-sky",
+                          state === "wrong" && "bg-pg-gold",
+                          state === "error" && "bg-pg-rose",
+                          !state && "bg-pg-hover",
                         )}
                       />
                       <span className="min-w-0 flex-1 text-[0.8125rem] leading-relaxed">
@@ -310,10 +310,14 @@ export function ChallengeLab({ lab }: { lab: Lab }) {
           </Panel>
 
           <Panel title="Live database" bodyClassName="p-3">
-            <TableExplorer onSelect={(statement) => setSql(statement)} />
+            <TableExplorer
+              className="h-80"
+              onSelect={(statement) => setSql(statement)}
+              onOpenMap={() => setStage("map")}
+            />
           </Panel>
         </div>
       </div>
-    </div>
+    </LabScroll>
   );
 }

@@ -15,7 +15,7 @@ export function Quiz({ questions }: { questions: QuizQuestion[] }) {
 
   if (questions.length === 0) {
     return (
-      <p className="px-1 py-6 text-sm text-ink-400">
+      <p className="px-1 py-6 text-sm text-pg-dim">
         This lab has no quiz. Use the challenges or interview questions instead.
       </p>
     );
@@ -27,7 +27,7 @@ export function Quiz({ questions }: { questions: QuizQuestion[] }) {
   return (
     <div className="space-y-4">
       {answered > 0 ? (
-        <p className="font-mono text-xs text-ink-400">
+        <p className="font-mono text-xs text-pg-dim">
           {correct} / {answered} correct
         </p>
       ) : null}
@@ -39,9 +39,9 @@ export function Quiz({ questions }: { questions: QuizQuestion[] }) {
         return (
           <fieldset
             key={question.question}
-            className="rounded-xl border border-white/10 bg-white/[0.03] p-4"
+            className="rounded-xl border border-pg-line bg-pg-raised p-4"
           >
-            <legend className="px-1 text-[0.8125rem] leading-relaxed font-medium text-white">
+            <legend className="px-1 text-[0.8125rem] leading-relaxed font-medium text-pg-text">
               {question.question}
             </legend>
 
@@ -55,13 +55,16 @@ export function Quiz({ questions }: { questions: QuizQuestion[] }) {
                     key={option}
                     className={cn(
                       "flex cursor-pointer items-start gap-2.5 rounded-lg border px-3 py-2 text-[0.8125rem] transition-colors",
-                      !done && "border-white/10 hover:border-white/25 hover:bg-white/[0.04]",
-                      done && isAnswer && "border-mint-500/50 bg-mint-500/12 text-white",
+                      !done &&
+                        "border-pg-line hover:border-pg-line-strong hover:bg-pg-hover",
+                      done &&
+                        isAnswer &&
+                        "border-pg-sky/55 bg-pg-sky-soft text-pg-text",
                       done &&
                         isChosen &&
                         !isAnswer &&
-                        "border-ember-500/50 bg-ember-500/12 text-white",
-                      done && !isAnswer && !isChosen && "border-white/8 text-ink-400",
+                        "border-pg-rose/55 bg-pg-rose-soft text-pg-text",
+                      done && !isAnswer && !isChosen && "border-pg-line text-pg-dim",
                       done && "cursor-default",
                     )}
                   >
@@ -76,11 +79,11 @@ export function Quiz({ questions }: { questions: QuizQuestion[] }) {
                           [questionIndex]: optionIndex,
                         }))
                       }
-                      className="mt-0.5 accent-violet-500"
+                      className="mt-0.5 accent-[var(--pg-primary)]"
                     />
-                    <span className="min-w-0 flex-1 text-ink-100">{option}</span>
+                    <span className="min-w-0 flex-1 text-pg-text">{option}</span>
                     {done && isAnswer ? (
-                      <span className="shrink-0 text-xs font-medium text-mint-100">
+                      <span className="shrink-0 text-xs font-medium text-pg-sky">
                         Correct
                       </span>
                     ) : null}
@@ -90,7 +93,7 @@ export function Quiz({ questions }: { questions: QuizQuestion[] }) {
             </div>
 
             {done ? (
-              <p className="mt-3 border-t border-white/8 pt-3 text-[0.8125rem] leading-relaxed text-ink-300">
+              <p className="animate-pg-fade-in mt-3 border-t border-pg-line pt-3 text-[0.8125rem] leading-relaxed text-pg-dim">
                 {question.explain}
               </p>
             ) : null}

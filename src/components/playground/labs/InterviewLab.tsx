@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import { LabIntro, Panel, PillButton } from "@/components/playground/LabChrome";
+import { LabIntro, LabScroll, Panel, PillButton } from "@/components/playground/LabChrome";
 import { courses } from "@/content/courses";
 import { interviewQuestions, type Lab } from "@/content/labs";
 import { cn } from "@/lib/cn";
@@ -58,7 +58,7 @@ export function InterviewLab({ lab }: { lab: Lab }) {
   };
 
   return (
-    <div className="space-y-5">
+    <LabScroll>
       <LabIntro lab={lab} />
 
       <Panel
@@ -101,35 +101,35 @@ export function InterviewLab({ lab }: { lab: Lab }) {
                 id={`interview-${index}`}
                 className={cn(
                   "overflow-hidden rounded-xl border transition-colors",
-                  open ? "border-white/20 bg-white/[0.04]" : "border-white/8",
+                  open ? "border-pg-line-strong bg-pg-hover" : "border-pg-line",
                 )}
               >
                 <button
                   type="button"
                   onClick={() => toggle(index)}
                   aria-expanded={open}
-                  className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-white/[0.03]"
+                  className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-pg-raised"
                 >
-                  <span className="mt-0.5 font-mono text-[0.6875rem] text-ink-500">
+                  <span className="mt-0.5 font-mono text-[0.6875rem] text-pg-faint">
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[0.9375rem] leading-relaxed font-medium text-white">
+                    <span className="block text-[0.9375rem] leading-relaxed font-medium text-pg-text">
                       {question.question}
                     </span>
                     {course ? (
-                      <span className="mt-1 block text-[0.6875rem] uppercase tracking-[0.08em] text-violet-300">
+                      <span className="mt-1 block text-[0.6875rem] uppercase tracking-[0.08em] text-pg-gold">
                         {course.title}
                       </span>
                     ) : null}
                   </span>
-                  <span className="shrink-0 rounded-full border border-white/15 px-2.5 py-1 text-[0.625rem] font-medium text-ink-300">
+                  <span className="shrink-0 rounded-full border border-pg-line px-2.5 py-1 text-[0.625rem] font-medium text-pg-dim">
                     {open ? "Hide" : "Show answer"}
                   </span>
                 </button>
 
                 {open ? (
-                  <p className="border-t border-white/8 px-4 py-3.5 text-[0.875rem] leading-relaxed text-ink-200">
+                  <p className="border-t border-pg-line px-4 py-3.5 text-[0.875rem] leading-relaxed text-pg-text">
                     {question.answer}
                   </p>
                 ) : null}
@@ -138,7 +138,7 @@ export function InterviewLab({ lab }: { lab: Lab }) {
           })}
         </ol>
       </Panel>
-    </div>
+    </LabScroll>
   );
 }
 
@@ -159,8 +159,8 @@ function FilterChip({
       className={cn(
         "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
         active
-          ? "bg-violet-500/25 text-white"
-          : "border border-white/12 text-ink-300 hover:border-white/25 hover:text-white",
+          ? "bg-pg-iris-soft text-pg-text"
+          : "border border-pg-line-strong text-pg-dim hover:border-pg-line-strong hover:text-pg-text",
       )}
     >
       {label}

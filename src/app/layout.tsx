@@ -90,15 +90,18 @@ export const viewport: Viewport = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  // Translation extensions and in-browser translate rewrite `lang` on <html>
-  // before React hydrates, which reads as a mismatch. suppressHydrationWarning
-  // is shallow: it covers this element's own attributes, not the tree below.
   return (
     <html
       lang="en-IN"
-      suppressHydrationWarning
       data-scroll-behavior="smooth"
       className={`${inter.variable} ${mono.variable} h-full antialiased`}
+      // The playground's theme script writes data-pg-theme here during HTML
+      // parsing, ahead of hydration, so the workspace never flashes the wrong
+      // surface. React did not render that attribute and must be told not to
+      // treat it as a mismatch — the DOM is deliberately ahead of the server.
+      // It also absorbs translation extensions rewriting `lang` before React
+      // hydrates. The suppression is shallow: this element's attributes only.
+      suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col bg-[#fffdf8]">
         {/* Scroll reveals start at opacity 0 and are shown by an observer.
