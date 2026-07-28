@@ -4,8 +4,8 @@ import Link from "next/link";
 import { JsonLd } from "@/components/JsonLd";
 import { Reveal } from "@/components/motion/Reveal";
 import { CtaBand } from "@/components/site/CtaBand";
-import { PageHero } from "@/components/site/PageHero";
-import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
+import { PlaygroundHero } from "@/components/site/PlaygroundHero";
+import { ArrowIcon } from "@/components/ui/Button";
 import { Container, Eyebrow, Section } from "@/components/ui/Section";
 import { courses, durationLabel } from "@/content/courses";
 import { ALL_TABLES } from "@/content/lab-seed";
@@ -39,35 +39,22 @@ export default function PlaygroundHubPage() {
 
   return (
     <>
-      <PageHero
-        variant="lab"
-        eyebrow="Practice lab"
-        title="Stop reading about SQL. Run it."
-        description="A real SQLite database, seeded with a warehouse and a deliberately dirty ETL feed, running entirely in your browser. Write a query and see rows. Run an ETL job and watch rows get rejected. Change a customer's city and watch history get written."
-        breadcrumb={[{ name: "Playground", href: "/playground" }]}
-        aside={
-          <div className="border border-navy-900/15 bg-[#fffdf8] p-6 shadow-[8px_8px_0_0_#e7b94d]">
-            <dl className="grid grid-cols-2 gap-5">
-              <Metric value={labs.length} label="Labs" />
-              <Metric value={ALL_TABLES.length} label="Live tables" />
-              <Metric value={challengeCount} label="Graded challenges" />
-              <Metric value={interviewQuestions.length} label="Interview questions" />
-            </dl>
-            <div className="mt-6 flex flex-col gap-2.5">
-              <ButtonLink href={`/playground/${firstLab}`} size="md">
-                Open the SQL playground
-                <ArrowIcon />
-              </ButtonLink>
-              <ButtonLink href="/courses" variant="ghost" size="md">
-                See the full syllabus
-              </ButtonLink>
-            </div>
-            <p className="mt-4 border-t border-ink-200 pt-4 text-xs leading-relaxed text-ink-600">
-              Nothing is installed and nothing is uploaded. The database is created
-              in your browser and reset with one click.
-            </p>
-          </div>
-        }
+      <PlaygroundHero
+        metrics={[
+          { value: labs.length, label: "Labs", icon: "flask" },
+          { value: ALL_TABLES.length, label: "Live tables", icon: "table" },
+          { value: challengeCount, label: "Graded challenges", icon: "trophy" },
+          {
+            value: interviewQuestions.length,
+            label: "Interview questions",
+            icon: "chat",
+          },
+        ]}
+        primary={{
+          label: "Open the SQL playground",
+          href: `/playground/${firstLab}`,
+        }}
+        secondary={{ label: "See the full syllabus", href: "/courses" }}
       />
 
       <Section className="py-16 sm:py-20">
@@ -232,17 +219,6 @@ export default function PlaygroundHubPage() {
 
       <JsonLd data={breadcrumbSchema([{ name: "Playground", href: "/playground" }])} />
     </>
-  );
-}
-
-function Metric({ value, label }: { value: number; label: string }) {
-  return (
-    <div className="border-l border-ink-200 pl-3 first:border-l-0 first:pl-0">
-      <dt className="text-xs text-ink-500">{label}</dt>
-      <dd className="mt-1 font-mono text-2xl font-semibold text-navy-900 tabular-nums">
-        {value}
-      </dd>
-    </div>
   );
 }
 
