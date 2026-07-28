@@ -108,6 +108,10 @@
   --animate-marquee: marquee 42s linear infinite;
   --animate-shimmer: shimmer 1.6s var(--ease-in-out-soft) infinite;
   --animate-float: float 7s ease-in-out infinite;
+  /* Navbar overlays. Stand in for tailwindcss-animate's `animate-in
+     zoom-in-95` / `slide-in-from-top-2`, which this project doesn't install. */
+  --animate-zoom-in: zoom-in-95 0.2s var(--ease-out-expo) both;
+  --animate-slide-in-top: slide-in-top 0.24s var(--ease-out-expo) both;
   --animate-pg-touch: pg-touch 1.1s var(--ease-out-expo) 1;
   --animate-pg-nudge: pg-nudge 1.4s var(--ease-in-out-soft) 2;
   --animate-pg-row-in: pg-row-in 0.32s var(--ease-out-expo) both;
@@ -267,6 +271,30 @@
   }
 }
 
+/* Mobile nav panel entering. */
+@keyframes zoom-in-95 {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Course accordion revealing inside the mobile nav panel. */
+@keyframes slide-in-top {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @keyframes float {
   0%,
   100% {
@@ -342,7 +370,11 @@
 
 @layer base {
   :root {
-    --header-h: 4.5rem;
+    /* Height of the fixed header band. The nav pill sits inside it and must
+       clear its own content: a 4rem pill plus the 0.5rem float offset it takes
+       on when scrolled. Kept constant because the playground shell and both
+       hero sections subtract this value to size themselves. */
+    --header-h: 5rem;
     color-scheme: light;
   }
 
