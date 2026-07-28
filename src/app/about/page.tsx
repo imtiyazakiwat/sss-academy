@@ -5,7 +5,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { CountUp } from "@/components/motion/CountUp";
 import { Parallax } from "@/components/motion/Parallax";
 import { Reveal } from "@/components/motion/Reveal";
-import { AboutHero } from "@/components/site/AboutHero";
+import { ArtHero } from "@/components/site/ArtHero";
 import { FounderBlock } from "@/components/site/FounderBlock";
 import { Container, Eyebrow, Section } from "@/components/ui/Section";
 import { mission, stats, story, vision } from "@/content/about";
@@ -21,7 +21,14 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <>
-      <AboutHero />
+      <ArtHero
+        eyebrow="About"
+        title="Building careers through quality IT training"
+        description="Founded to close the distance between what colleges teach and what employers actually test for."
+        image="/img/about-us-bg.webp"
+        imageAlt="An illustrated SSS Academy workspace with a laptop, a code cube and books marked Learn, Practice and Grow"
+        cta={{ label: "Explore Our Story", href: "#our-story" }}
+      />
 
       <Section
         id="our-story"
