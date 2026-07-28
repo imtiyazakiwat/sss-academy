@@ -166,8 +166,8 @@ export function Hero() {
 
             <Reveal
               delay={380}
-              direction="down"
-              className="mt-4 lg:absolute lg:top-2 lg:right-0 lg:mt-0"
+              direction="up"
+              className="mt-4 lg:absolute lg:right-28 lg:-bottom-16 lg:mt-0"
             >
               <a
                 href={youtube}
