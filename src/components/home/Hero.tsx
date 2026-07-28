@@ -4,6 +4,7 @@ import { Reveal } from "@/components/motion/Reveal";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
 import { initials, placements } from "@/content/placements";
 import { socials } from "@/content/site";
+import { ENQUIRY_HREF } from "@/lib/anchors";
 
 const youtube = socials.find((s) => s.label === "YouTube")!.href;
 
@@ -87,7 +88,7 @@ export function Hero() {
 
             <Reveal delay={220}>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <ButtonLink href="/contact" size="lg">
+                <ButtonLink href={ENQUIRY_HREF} size="lg">
                   Enroll Now
                   <ArrowIcon />
                 </ButtonLink>
@@ -166,8 +167,8 @@ export function Hero() {
 
             <Reveal
               delay={380}
-              direction="down"
-              className="mt-4 lg:absolute lg:top-2 lg:right-0 lg:mt-0"
+              direction="up"
+              className="mt-4 lg:absolute lg:right-28 lg:-bottom-16 lg:mt-0"
             >
               <a
                 href={youtube}

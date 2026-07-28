@@ -14,6 +14,7 @@ import {
   relatedCourses,
 } from "@/content/courses";
 import { placements } from "@/content/placements";
+import { enquiryHref } from "@/lib/anchors";
 import { breadcrumbSchema, courseSchema } from "@/lib/schema";
 
 /** All eleven courses are known at build time — prerender every detail page. */
@@ -123,7 +124,7 @@ export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
               </Reveal>
 
               <Reveal delay={120} className="mt-8 flex justify-center">
-                <ButtonLink href={`/contact?course=${course.slug}#enquiry-form`} size="lg" className="text-base px-8 py-4 shadow-lg">
+                <ButtonLink href={enquiryHref(course.slug)} size="lg" className="text-base px-8 py-4 shadow-lg">
                   Send my enquiry
                   <ArrowIcon />
                 </ButtonLink>

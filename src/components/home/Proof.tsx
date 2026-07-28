@@ -2,12 +2,12 @@ import { Reveal } from "@/components/motion/Reveal";
 import { PlacementCard } from "@/components/site/PlacementCard";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
 import { Container, Section, SectionHeader } from "@/components/ui/Section";
-import { placements } from "@/content/placements";
+import { placements, placementsByPackage } from "@/content/placements";
 
 /** Learner voices shown in two calm, continuously scrolling rows. */
 export function Proof() {
-  // Split placements into two rows; pad each to at least 6 cards
-  const all = placements;
+  // Highest packages lead each row; split into two for the opposing marquees
+  const all = placementsByPackage;
   const half = Math.ceil(all.length / 2);
   const row1 = all.slice(0, half);
   const row2 = all.slice(half);
@@ -33,16 +33,14 @@ export function Proof() {
             align="center"
           />
         </Reveal>
-
-
       </Container>
 
       {/* Marquee — intentionally full-bleed, overflows Container */}
       <div className="relative mt-14 mask-edges" aria-label="Student placement testimonials">
         {/* Row 1 — scrolls left */}
-        <MarqueeRow items={row1} direction="left" />
+        <MarqueeRow items={row1} direction="left" duration="64s" />
         {/* Row 2 — scrolls right for a dynamic opposing feel */}
-        <MarqueeRow items={row2} direction="right" className="mt-4" />
+        <MarqueeRow items={row2} direction="right" duration="78s" className="mt-2" />
       </div>
 
       <Container className="relative">
@@ -57,28 +55,59 @@ export function Proof() {
   );
 }
 
-/** One infinite-scroll row of placement cards. */
+/**
+ * One infinite-scroll row of placement cards.
+ *
+ * The track holds two identical groups and translates by exactly -50%, so the
+ * loop restarts on a frame that is pixel-identical to the first one. Spacing
+ * lives on the cards (px-2) rather than on a flex `gap`, otherwise the trailing
+ * gap is not part of the duplicated set and the row visibly jumps every cycle.
+ */
 function MarqueeRow({
   items,
   direction,
+  duration,
   className,
 }: {
   items: (typeof placements)[number][];
   direction: "left" | "right";
+  duration: string;
   className?: string;
 }) {
-  // Duplicate for seamless loop
-  const doubled = [...items, ...items];
-
   return (
-    <div
-      className={`flex w-max gap-4 ${className ?? ""}`}
-      style={{
-        animation: `marquee ${direction === "right" ? "50s" : "40s"} linear infinite ${direction === "right" ? "reverse" : ""}`,
-      }}
-    >
-      {doubled.map((placement, i) => (
-        <div key={`${placement.slug}-${i}`} className="w-[320px] shrink-0">
+    <div className={`overflow-hidden ${className ?? ""}`}>
+      <div
+        className="flex w-max will-change-transform hover:[animation-play-state:paused] motion-reduce:[animation-play-state:paused]"
+        style={{
+          animationName: "marquee",
+          animationDuration: duration,
+          animationTimingFunction: "linear",
+          animationIterationCount: "infinite",
+          animationDirection: direction === "right" ? "reverse" : "normal",
+        }}
+      >
+        <MarqueeGroup items={items} />
+        <MarqueeGroup items={items} clone />
+      </div>
+    </div>
+  );
+}
+
+/** Half of a marquee track. The clone is hidden from assistive tech. */
+function MarqueeGroup({
+  items,
+  clone = false,
+}: {
+  items: (typeof placements)[number][];
+  clone?: boolean;
+}) {
+  return (
+    <div className="flex shrink-0 items-stretch" aria-hidden={clone || undefined}>
+      {items.map((placement) => (
+        <div
+          key={placement.slug}
+          className="w-[19rem] shrink-0 px-2 sm:w-[21rem]"
+        >
           <PlacementCard placement={placement} compact />
         </div>
       ))}

@@ -1,14 +1,15 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { cn } from "@/lib/cn";
 
 /**
- * Typographic wordmark rather than the legacy raster logo.
+ * Institute mark plus a typographic wordmark.
  *
- * The original logo.png was a 718 KB bitmap with baked-in text — it went soft at
- * small sizes and cost more than the whole CSS bundle. The mark keeps the
- * forest body and the layered-S motif. The raster still ships as the favicon
- * and OG image.
+ * The mark is the supplied 1080x1080 raster, served through next/image so it is
+ * resized and re-encoded to avif/webp at the 40px box it actually occupies. The
+ * source is a JPEG (no alpha), so the tile keeps a white backdrop and
+ * object-contain to avoid cropping the artwork.
  */
 export function Logo({
   tone = "light",
@@ -27,24 +28,20 @@ export function Logo({
       {/* Decorative mark — the wordmark beside it carries the accessible name */}
       <span
         aria-hidden="true"
-        className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-navy-950 shadow-[0_6px_16px_-6px_rgb(23_63_53/0.5)]"
+        className={cn(
+          "relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-[0_6px_16px_-6px_rgb(23_63_53/0.35)]",
+          tone === "dark" ? "ring-1 ring-white/15" : "ring-1 ring-ink-200",
+        )}
       >
-        <span className="absolute inset-0 bg-gradient-to-br from-navy-800 via-navy-950 to-navy-950" />
-        <span className="absolute -right-2.5 -bottom-2.5 size-6 rounded-full bg-violet-500/70 blur-[7px] transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:scale-150" />
-        <svg viewBox="0 0 24 24" className="relative size-5.5" fill="none">
-          <path
-            d="M17.5 7.2c-1-1.6-2.9-2.6-5-2.6-2.6 0-4.6 1.5-4.6 3.6 0 2 1.6 3 4.4 3.6"
-            stroke="white"
-            strokeWidth="2.1"
-            strokeLinecap="round"
-          />
-          <path
-            d="M6.5 16.8c1 1.6 2.9 2.6 5 2.6 2.6 0 4.6-1.5 4.6-3.6 0-2-1.6-3-4.4-3.6"
-            stroke="var(--color-violet-300)"
-            strokeWidth="2.1"
-            strokeLinecap="round"
-          />
-        </svg>
+        <Image
+          src="/img/logo.jpeg"
+          alt=""
+          width={80}
+          height={80}
+          sizes="40px"
+          priority
+          className="size-full object-contain"
+        />
       </span>
 
       <span className="flex flex-col leading-none">

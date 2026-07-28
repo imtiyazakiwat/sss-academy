@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { ArrowIcon, Button } from "@/components/ui/Button";
 import { courses } from "@/content/courses";
 import { contact } from "@/content/site";
+import { ENQUIRY_NAME_FIELD_ID, focusEnquiryField } from "@/lib/anchors";
 import { cn } from "@/lib/cn";
 import {
   FIELD_LIMITS,
@@ -37,6 +38,24 @@ export function EnquiryForm({
     if (status === "error" && formError) errorRef.current?.focus();
   }, [formError, status]);
 
+  // Arriving on #enquiry-name (navbar "Enroll Now") should put the caret in the
+  // first field, not just scroll near it. hashchange covers back/forward.
+  useEffect(() => {
+    const onHash = () => {
+      if (window.location.hash === `#${ENQUIRY_NAME_FIELD_ID}`) {
+        focusEnquiryField();
+      }
+    };
+
+    onHash();
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  // The name field carries a stable id; the rest stay scoped to this instance.
+  const fieldId = (field: string) =>
+    field === "name" ? ENQUIRY_NAME_FIELD_ID : `${uid}-${field}`;
+
   const set = (field: keyof typeof EMPTY) => (value: string) => {
     setValues((current) => ({ ...current, [field]: value }));
     if (errors[field]) {
@@ -46,8 +65,8 @@ export function EnquiryForm({
 
   const describedBy = (field: string, hasHint = false) => {
     const ids = [
-      hasHint ? `${uid}-${field}-hint` : "",
-      errors[field] ? `${uid}-${field}-error` : "",
+      hasHint ? `${fieldId(field)}-hint` : "",
+      errors[field] ? `${fieldId(field)}-error` : "",
     ].filter(Boolean);
     return ids.length ? ids.join(" ") : undefined;
   };
@@ -65,7 +84,7 @@ export function EnquiryForm({
         if (!next[key]) next[key] = issue.message;
       }
       setErrors(next);
-      document.getElementById(`${uid}-${Object.keys(next)[0]}`)?.focus();
+      document.getElementById(fieldId(Object.keys(next)[0]))?.focus();
       return;
     }
 
@@ -180,9 +199,13 @@ export function EnquiryForm({
       ) : null}
 
       <div className="grid gap-x-5 gap-y-6 sm:grid-cols-2">
-        <Field id={`${uid}-name`} label="Full name" error={errors.name}>
+        <Field
+          id={ENQUIRY_NAME_FIELD_ID}
+          label="Full name"
+          error={errors.name}
+        >
           <input
-            id={`${uid}-name`}
+            id={ENQUIRY_NAME_FIELD_ID}
             name="name"
             type="text"
             required
