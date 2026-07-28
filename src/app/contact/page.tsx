@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 
 import { JsonLd } from "@/components/JsonLd";
 import { Reveal } from "@/components/motion/Reveal";
+import { ContactHero } from "@/components/site/ContactHero";
 import { EnquiryForm } from "@/components/site/EnquiryForm";
-import { PageHero } from "@/components/site/PageHero";
 import { Container, Eyebrow, Section } from "@/components/ui/Section";
 import { getCourse } from "@/content/courses";
 import { contact, socials } from "@/content/site";
@@ -70,13 +70,7 @@ export default async function ContactPage({
 
   return (
     <>
-      <PageHero
-        variant="contact"
-        eyebrow="Contact"
-        title="Let's work out where you should start"
-        description="Send an enquiry or call us directly. Counselling is free, and we'll give you a straight answer about which track fits your background."
-        breadcrumb={[{ name: "Contact", href: "/contact" }]}
-      />
+      <ContactHero />
 
       <Section id="enquiry-form" className="py-16 sm:py-20">
         <Container>
