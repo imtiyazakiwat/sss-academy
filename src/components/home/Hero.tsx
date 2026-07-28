@@ -2,13 +2,13 @@ import Image from "next/image";
 
 import { Reveal } from "@/components/motion/Reveal";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
-import { initials, placementsByPackage } from "@/content/placements";
+import { initials, placements } from "@/content/placements";
 import { socials } from "@/content/site";
 
 const youtube = socials.find((s) => s.label === "YouTube")!.href;
 
 /** Four names off the top of the placement list, used for the avatar stack. */
-const avatars = placementsByPackage.slice(0, 4);
+const avatars = placements.slice(0, 4);
 
 const avatarTints = [
   "bg-navy-900 text-white",
@@ -143,7 +143,7 @@ export function Hero() {
                       1000+
                     </span>
                     <span className="block text-xs text-ink-500">
-                      Students placed
+                      Learners supported
                     </span>
                   </span>
                 </div>

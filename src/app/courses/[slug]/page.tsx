@@ -4,8 +4,7 @@ import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/JsonLd";
 import { Reveal } from "@/components/motion/Reveal";
 import { CourseCard } from "@/components/site/CourseCard";
-import { EnquiryForm } from "@/components/site/EnquiryForm";
-import { PageHero } from "@/components/site/PageHero";
+import { CourseHero } from "@/components/site/CourseHero";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
 import { Container, Eyebrow, Section } from "@/components/ui/Section";
 import {
@@ -13,10 +12,8 @@ import {
   durationLabel,
   getCourse,
   relatedCourses,
-  trackLabels,
 } from "@/content/courses";
-import { placementsByPackage } from "@/content/placements";
-import { contact } from "@/content/site";
+import { placements } from "@/content/placements";
 import { breadcrumbSchema, courseSchema } from "@/lib/schema";
 
 /** All eleven courses are known at build time — prerender every detail page. */
@@ -51,43 +48,12 @@ export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
   const related = relatedCourses(course.slug);
   const schema = courseSchema(course.slug);
 
-  // Illustrative proof: the top packages, which came through these tracks.
-  const proof = placementsByPackage.slice(0, 3);
+  // A small selection of learner stories from related training tracks.
+  const proof = placements.slice(0, 3);
 
   return (
     <>
-      <PageHero
-        eyebrow={trackLabels[course.track]}
-        title={`${course.title} Training`}
-        description={course.summary}
-        breadcrumb={[
-          { name: "Courses", href: "/courses" },
-          { name: course.title, href: `/courses/${course.slug}` },
-        ]}
-        aside={
-          <div className="rounded-2xl border border-white/12 bg-white/[0.06] p-6 backdrop-blur">
-            <dl className="space-y-4">
-              <Row label="Duration" value={durationLabel(course.durationMonths)} />
-              <Row label="Level" value={course.level} />
-              <Row label="Track" value={trackLabels[course.track]} />
-              <Row label="Mode" value="Classroom, Chikkodi" />
-            </dl>
-            <div className="mt-6 flex flex-col gap-2.5">
-              <ButtonLink href="#enquire" size="md">
-                Enquire about this course
-                <ArrowIcon />
-              </ButtonLink>
-              <ButtonLink
-                href={`tel:${contact.phoneHrefs[0]}`}
-                variant="onDark"
-                size="md"
-              >
-                Call {contact.phones[0]}
-              </ButtonLink>
-            </div>
-          </div>
-        }
-      />
+      <CourseHero course={course} />
 
       <Section className="py-16 sm:py-20">
         <Container>
@@ -155,6 +121,13 @@ export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
                   </ul>
                 </div>
               </Reveal>
+
+              <Reveal delay={120} className="mt-8 flex justify-center">
+                <ButtonLink href={`/contact?course=${course.slug}#enquiry-form`} size="lg" className="text-base px-8 py-4 shadow-lg">
+                  Send my enquiry
+                  <ArrowIcon />
+                </ButtonLink>
+              </Reveal>
             </div>
 
             {/* Sticky proof + conversion rail */}
@@ -163,28 +136,23 @@ export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
                 <div className="rounded-2xl border border-ink-200 bg-white p-6 shadow-card">
                   <Eyebrow>Where this leads</Eyebrow>
                   <p className="mt-4 text-sm leading-relaxed text-ink-600">
-                    Students from our data and testing tracks have been placed at
-                    multinationals on packages up to ₹
-                    {placementsByPackage[0].packageLpa.toFixed(2)} LPA.
+                    Learners from our data and testing tracks describe the same
+                    foundations: practical work, clear explanations and focused
+                    interview preparation.
                   </p>
 
                   <ul className="mt-5 space-y-3">
                     {proof.map((p) => (
                       <li
                         key={p.slug}
-                        className="flex items-center justify-between gap-4 border-t border-ink-100 pt-3 first:border-t-0 first:pt-0"
+                        className="border-t border-ink-100 pt-3 first:border-t-0 first:pt-0"
                       >
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-navy-950">
-                            {p.name}
-                          </p>
-                          <p className="truncate text-xs text-ink-500">
-                            {p.role}
-                          </p>
-                        </div>
-                        <span className="shrink-0 font-mono text-xs font-medium text-ember-600">
-                          {p.packageLpa.toFixed(2)} LPA
-                        </span>
+                        <p className="truncate text-sm font-medium text-navy-950">
+                          {p.name}
+                        </p>
+                        <p className="truncate text-xs text-ink-500">
+                          {p.role}
+                        </p>
                       </li>
                     ))}
                   </ul>
@@ -205,38 +173,6 @@ export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
         </Container>
       </Section>
 
-      <Section id="enquire" tone="muted" className="py-16 sm:py-20">
-        <Container>
-          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
-            <Reveal className="lg:col-span-5">
-              <Eyebrow>Enquire</Eyebrow>
-              <h2 className="text-headline mt-4 text-navy-950">
-                Ask about the {course.title} batch
-              </h2>
-              <p className="mt-5 leading-relaxed text-ink-600">
-                Send us your details and we&apos;ll get back to you with batch
-                timings, fees and whether this is the right starting point for
-                your background.
-              </p>
-              <p className="mt-6 text-sm text-ink-500">
-                Prefer to talk?{" "}
-                <a
-                  href={`tel:${contact.phoneHrefs[0]}`}
-                  className="font-medium text-navy-900 underline decoration-ember-400 decoration-2 underline-offset-2"
-                >
-                  {contact.phones[0]}
-                </a>
-              </p>
-            </Reveal>
-
-            <Reveal delay={100} className="lg:col-span-7">
-              <div className="rounded-2xl border border-ink-200 bg-white p-6 shadow-card sm:p-8">
-                <EnquiryForm defaultCourse={course.slug} />
-              </div>
-            </Reveal>
-          </div>
-        </Container>
-      </Section>
 
       <Section className="py-16 sm:py-20">
         <Container>
@@ -263,14 +199,5 @@ export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
         ])}
       />
     </>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-white/10 pb-3 last:border-b-0 last:pb-0">
-      <dt className="text-xs text-navy-400">{label}</dt>
-      <dd className="text-sm font-medium text-white">{value}</dd>
-    </div>
   );
 }

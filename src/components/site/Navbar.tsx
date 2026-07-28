@@ -7,12 +7,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/site/Logo";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
 import { courses, trackLabels, type CourseTrack } from "@/content/courses";
-import { contact } from "@/content/site";
 import { cn } from "@/lib/cn";
 
 const links: { label: string; href: string; hasMenu?: boolean }[] = [
   { label: "Home", href: "/" },
   { label: "Courses", href: "/courses", hasMenu: true },
+  { label: "Playground", href: "/playground" },
   { label: "Placements", href: "/placements" },
   { label: "About Us", href: "/about" },
   { label: "Contact", href: "/contact" },
@@ -91,9 +91,9 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 bg-white transition-[box-shadow,border-color] duration-300",
+        "fixed inset-x-0 top-0 z-50 bg-[#fffdf8] transition-[box-shadow,border-color] duration-300",
         scrolled || open
-          ? "border-b border-ink-200 shadow-[0_1px_20px_-8px_rgb(13_26_49/0.18)]"
+          ? "border-b border-ink-200 shadow-[0_1px_20px_-8px_rgb(23_63_53/0.18)]"
           : "border-b border-ink-100",
       )}
       style={{ height: "var(--header-h)" }}
@@ -184,7 +184,7 @@ export function Navbar() {
                   hidden={!menuOpen}
                   className="absolute top-full left-1/2 w-[42rem] -translate-x-1/2 pt-3"
                 >
-                  <div className="rounded-2xl border border-ink-200 bg-white p-5 shadow-lift">
+                  <div className="rounded-2xl border border-ink-200 bg-[#fffdf8] p-5 shadow-lift">
                     <div className="grid grid-cols-3 gap-x-6 gap-y-5">
                       {grouped.map((group) => (
                         <div key={group.label}>
@@ -223,21 +223,6 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-5 lg:flex">
-          <a
-            href={`tel:${contact.phoneHrefs[0]}`}
-            className="flex items-center gap-2 text-[0.9375rem] font-medium text-navy-900 transition-colors hover:text-violet-700"
-          >
-            <svg viewBox="0 0 18 18" aria-hidden="true" className="size-4">
-              <path
-                d="M6.2 2.6 7.6 5.3 6.1 6.9c.6 1.6 2.4 3.4 4 4l1.6-1.5 2.7 1.4-.4 2.3c-.2.7-.9 1.1-1.6 1C8.2 13.4 4.6 9.8 3.5 5.2c-.2-.7.3-1.4 1-1.6l1.7-.4Z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinejoin="round"
-              />
-            </svg>
-            {contact.phones[0]}
-          </a>
           <ButtonLink href="/contact" size="md">
             Enroll Now
             <ArrowIcon />
@@ -276,7 +261,7 @@ export function Navbar() {
         className="lg:hidden"
         style={{ height: open ? "calc(100dvh - var(--header-h))" : 0 }}
       >
-        <div className="flex h-full flex-col justify-between overflow-y-auto border-t border-ink-200 bg-white px-5 pt-5 pb-8">
+        <div className="flex h-full flex-col justify-between overflow-y-auto border-t border-ink-200 bg-[#fffdf8] px-5 pt-5 pb-8">
           <nav aria-label="Mobile" className="flex flex-col">
             {links.map((item) => (
               <Link
@@ -291,19 +276,10 @@ export function Navbar() {
             ))}
           </nav>
 
-          {/* Clicks bubble up from either CTA, so the drawer closes on both */}
           <div className="mt-8 space-y-3" onClick={close}>
             <ButtonLink href="/contact" size="lg" className="w-full">
               Enroll Now
               <ArrowIcon />
-            </ButtonLink>
-            <ButtonLink
-              href={`tel:${contact.phoneHrefs[0]}`}
-              variant="ghost"
-              size="lg"
-              className="w-full"
-            >
-              Call {contact.phones[0]}
             </ButtonLink>
           </div>
         </div>
