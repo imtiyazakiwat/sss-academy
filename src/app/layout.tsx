@@ -3,7 +3,6 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 
 import { JsonLd } from "@/components/JsonLd";
 import { Footer } from "@/components/site/Footer";
-import { MobileCtaBar } from "@/components/site/MobileCtaBar";
 import { Navbar } from "@/components/site/Navbar";
 import { NoticeBar } from "@/components/site/NoticeBar";
 import { organizationSchema } from "@/lib/schema";
@@ -125,7 +124,6 @@ export default function RootLayout({
         </main>
 
         <Footer />
-        <MobileCtaBar />
 
         {/* Organisation-level structured data, carried over and expanded from the legacy site */}
         <JsonLd data={organizationSchema} />

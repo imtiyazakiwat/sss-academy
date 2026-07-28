@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/site/Logo";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
 import { courses, trackLabels, type CourseTrack } from "@/content/courses";
+import { ENQUIRY_HREF, focusEnquiryField } from "@/lib/anchors";
 import { cn } from "@/lib/cn";
 
 const links: { label: string; href: string; hasMenu?: boolean }[] = [
@@ -72,6 +73,14 @@ export function Navbar() {
       window.removeEventListener("pointerdown", onPointerDown);
     };
   }, [close]);
+
+  // The App Router changes a same-page hash with pushState, which does not fire
+  // hashchange — so when we are already on /contact, focus the field here. A
+  // frame of delay lets the mobile drawer close and release the scroll lock.
+  const onEnrollClick = () => {
+    if (pathname !== "/contact") return;
+    requestAnimationFrame(() => focusEnquiryField());
+  };
 
   // Small grace period on mouseleave so the pointer can cross the gap into the panel.
   const scheduleMenuClose = () => {
@@ -223,7 +232,7 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-5 lg:flex">
-          <ButtonLink href="/contact" size="md">
+          <ButtonLink href={ENQUIRY_HREF} size="md" onClick={onEnrollClick}>
             Enroll Now
             <ArrowIcon />
           </ButtonLink>
@@ -277,7 +286,12 @@ export function Navbar() {
           </nav>
 
           <div className="mt-8 space-y-3" onClick={close}>
-            <ButtonLink href="/contact" size="lg" className="w-full">
+            <ButtonLink
+              href={ENQUIRY_HREF}
+              size="lg"
+              className="w-full"
+              onClick={onEnrollClick}
+            >
               Enroll Now
               <ArrowIcon />
             </ButtonLink>

@@ -9,6 +9,7 @@ import {
   type Course,
 } from "@/content/courses";
 import { contact } from "@/content/site";
+import { enquiryHref } from "@/lib/anchors";
 
 const included = [
   "Real project work",
@@ -76,7 +77,7 @@ export function CourseHero({ course }: { course: Course }) {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
-                href={`/contact?course=${course.slug}#enquiry-form`}
+                href={enquiryHref(course.slug)}
                 className="group inline-flex h-13 items-center justify-center gap-2 rounded-full bg-[#173f35] px-7 text-base font-medium text-white transition-[transform,background-color] duration-200 hover:-translate-y-0.5 hover:bg-[#0f3028]"
               >
                 Ask about the next batch
