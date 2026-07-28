@@ -99,6 +99,8 @@ export default function RootLayout({
       // parsing, ahead of hydration, so the workspace never flashes the wrong
       // surface. React did not render that attribute and must be told not to
       // treat it as a mismatch — the DOM is deliberately ahead of the server.
+      // It also absorbs translation extensions rewriting `lang` before React
+      // hydrates. The suppression is shallow: this element's attributes only.
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col bg-[#fffdf8]">

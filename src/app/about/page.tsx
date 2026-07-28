@@ -5,8 +5,8 @@ import { JsonLd } from "@/components/JsonLd";
 import { CountUp } from "@/components/motion/CountUp";
 import { Parallax } from "@/components/motion/Parallax";
 import { Reveal } from "@/components/motion/Reveal";
+import { ArtHero } from "@/components/site/ArtHero";
 import { FounderBlock } from "@/components/site/FounderBlock";
-import { PageHero } from "@/components/site/PageHero";
 import { Container, Eyebrow, Section } from "@/components/ui/Section";
 import { mission, stats, story, vision } from "@/content/about";
 import { breadcrumbSchema } from "@/lib/schema";
@@ -21,15 +21,19 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <>
-      <PageHero
-        variant="editorial"
+      <ArtHero
         eyebrow="About"
         title="Building careers through quality IT training"
         description="Founded to close the distance between what colleges teach and what employers actually test for."
-        breadcrumb={[{ name: "About", href: "/about" }]}
+        image="/img/about-us-bg.webp"
+        imageAlt="An illustrated SSS Academy workspace with a laptop, a code cube and books marked Learn, Practice and Grow"
+        cta={{ label: "Explore Our Story", href: "#our-story" }}
       />
 
-      <Section className="overflow-hidden pt-16 pb-0 sm:pt-24 sm:pb-0">
+      <Section
+        id="our-story"
+        className="overflow-hidden pt-16 pb-0 sm:pt-24 sm:pb-0"
+      >
         <div
           aria-hidden="true"
           className="absolute -top-32 right-0 h-96 w-96 rounded-full bg-violet-100/60 blur-3xl"
