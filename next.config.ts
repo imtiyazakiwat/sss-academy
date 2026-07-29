@@ -10,7 +10,13 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    // Only local assets are used, so no remotePatterns are needed.
+    // Staff/team photos can come from any external host the admin pastes.
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
     formats: ["image/avif", "image/webp"],
   },
 

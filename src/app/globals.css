@@ -551,3 +551,25 @@
     overflow: hidden;
   }
 }
+
+/* ============================================================
+   Admin dashboard shell
+   ============================================================
+   Same trick as the playground: the root layout renders the navbar, notice bar
+   and footer for every route, and a nested layout cannot remove nodes a parent
+   rendered. The admin shell announces itself with a data attribute and these
+   rules stand the public chrome down. The dashboard is a tool, not a page — it
+   should not carry a marketing footer or an announcement bar. */
+
+@layer base {
+  body:has([data-admin-shell]) > header,
+  body:has([data-admin-shell]) > footer,
+  body:has([data-admin-shell]) [data-notice-bar] {
+    display: none;
+  }
+
+  /* `main` reserves space for the fixed header band that is now hidden. */
+  body:has([data-admin-shell]) #main {
+    padding-top: 0;
+  }
+}

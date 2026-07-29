@@ -9,6 +9,7 @@ import { ArtHero } from "@/components/site/ArtHero";
 import { FounderBlock } from "@/components/site/FounderBlock";
 import { Container, Eyebrow, Section } from "@/components/ui/Section";
 import { mission, stats, story, vision } from "@/content/about";
+import { getTeam } from "@/lib/cms/team";
 import { breadcrumbSchema } from "@/lib/schema";
 
 export const metadata: Metadata = {
@@ -18,7 +19,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/about" },
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const { founder, staff } = await getTeam();
+
   return (
     <>
       <ArtHero
@@ -182,7 +185,86 @@ export default function AboutPage() {
         </Container>
       </Section>
 
-      <FounderBlock tone="muted" />
+      {founder ? <FounderBlock founder={founder} tone="muted" /> : null}
+
+      {staff.length > 0 ? (
+        <Section className="py-16 sm:py-20">
+          <Container>
+            <Reveal className="mb-12 text-center">
+              <Eyebrow className="justify-center">Our team</Eyebrow>
+              <h2 className="text-title mx-auto mt-4 max-w-2xl text-navy-950">
+                The people behind every session
+              </h2>
+            </Reveal>
+
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {staff.map((member, i) => (
+                <Reveal key={member.id} delay={i * 80} scale={0.98}>
+                  <div className="flex h-full flex-col rounded-2xl border border-ink-200 bg-white p-6 shadow-subtle">
+                    {member.photo ? (
+                      <div className="mb-5 overflow-hidden rounded-xl bg-ink-100">
+                        {member.photo.startsWith("/") ? (
+                          <Image
+                            src={member.photo}
+                            alt={`${member.name}, ${member.role}`}
+                            width={400}
+                            height={400}
+                            className="aspect-square w-full object-cover"
+                          />
+                        ) : (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={member.photo}
+                            alt={`${member.name}, ${member.role}`}
+                            className="aspect-square w-full object-cover"
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      <div className="mb-5 grid aspect-square place-items-center rounded-xl bg-navy-50">
+                        <span className="text-4xl font-semibold text-navy-300">
+                          {member.name
+                            .split(/\s+/)
+                            .map((w) => w[0])
+                            .join("")
+                            .slice(0, 2)
+                            .toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+
+                    <h3 className="text-[1.0625rem] font-semibold text-navy-950">
+                      {member.name}
+                    </h3>
+                    <p className="mt-0.5 text-sm font-medium text-violet-700">
+                      {member.role}
+                    </p>
+
+                    {member.bio ? (
+                      <p className="mt-3 flex-1 text-sm leading-relaxed text-ink-600">
+                        {member.bio}
+                      </p>
+                    ) : null}
+
+                    {member.expertise.length > 0 ? (
+                      <ul className="mt-4 flex flex-wrap gap-1.5 border-t border-ink-100 pt-4">
+                        {member.expertise.map((skill) => (
+                          <li
+                            key={skill}
+                            className="rounded-full border border-ink-200 bg-ink-50 px-2.5 py-0.5 text-[0.6875rem] font-medium text-navy-800"
+                          >
+                            {skill}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </Container>
+        </Section>
+      ) : null}
 
       <JsonLd data={breadcrumbSchema([{ name: "About", href: "/about" }])} />
     </>

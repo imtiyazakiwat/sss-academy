@@ -1,6 +1,7 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 
+import { getCourses } from "@/lib/cms/courses";
 import { enquirySchema, type EnquiryResponse } from "@/lib/enquiry";
 import { getDb } from "@/lib/firebase";
 
@@ -80,6 +81,15 @@ export async function POST(request: Request): Promise<NextResponse<EnquiryRespon
     );
   }
 
+  // The shared schema only checks the shape of `course` — it is imported by the
+  // client form and cannot reach the catalogue. An unknown slug is dropped
+  // rather than rejected: the course is optional, and a stale bookmark should
+  // not cost us the enquiry.
+  const { courses } = await getCourses();
+  const course = courses.some((c) => c.slug === parsed.data.course)
+    ? parsed.data.course
+    : "";
+
   const db = getDb();
 
   if (!db) {
@@ -89,7 +99,7 @@ export async function POST(request: Request): Promise<NextResponse<EnquiryRespon
       name: parsed.data.name,
       phone: parsed.data.phone,
       email: parsed.data.email,
-      course: parsed.data.course,
+      course,
     });
     return NextResponse.json(
       {
@@ -104,6 +114,7 @@ export async function POST(request: Request): Promise<NextResponse<EnquiryRespon
   try {
     await db.collection("enquiries").add({
       ...parsed.data,
+      course,
       source: "website",
       status: "new",
       userAgent: request.headers.get("user-agent") ?? null,

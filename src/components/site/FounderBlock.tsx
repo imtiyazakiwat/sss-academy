@@ -3,15 +3,28 @@ import Image from "next/image";
 import { Parallax } from "@/components/motion/Parallax";
 import { Reveal } from "@/components/motion/Reveal";
 import { Container, Eyebrow, Section } from "@/components/ui/Section";
-import { founder } from "@/content/about";
+
+interface FounderData {
+  name: string;
+  role: string;
+  photo: string;
+  bio: string;
+  expertise: string[];
+  tags: string[];
+}
 
 /**
  * Founder credibility block. The strongest trust signal the institute has —
  * a named practitioner with a verifiable specialism, not an anonymous "faculty".
+ *
+ * Takes the founder data as a prop so the page above can source it from either
+ * Firestore (via the team loader) or the static fallback.
  */
 export function FounderBlock({
+  founder,
   tone = "light",
 }: {
+  founder: FounderData;
   tone?: "light" | "muted";
 }) {
   return (
@@ -28,14 +41,36 @@ export function FounderBlock({
                 />
               </Parallax>
               <div className="relative overflow-hidden rounded-2xl bg-ink-100">
-                <Image
-                  src={founder.photo}
-                  alt={`${founder.name}, ${founder.role} of SSS Academy`}
-                  width={800}
-                  height={966}
-                  sizes="(max-width: 1024px) 90vw, 420px"
-                  className="h-full w-full object-cover"
-                />
+                {founder.photo ? (
+                  founder.photo.startsWith("/") ? (
+                    <Image
+                      src={founder.photo}
+                      alt={`${founder.name}, ${founder.role} of SSS Academy`}
+                      width={800}
+                      height={966}
+                      sizes="(max-width: 1024px) 90vw, 420px"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={founder.photo}
+                      alt={`${founder.name}, ${founder.role} of SSS Academy`}
+                      className="h-full w-full object-cover"
+                    />
+                  )
+                ) : (
+                  <div className="grid aspect-[800/966] w-full place-items-center">
+                    <span className="text-6xl font-semibold text-navy-300">
+                      {founder.name
+                        .split(/\s+/)
+                        .map((w) => w[0])
+                        .join("")
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </Reveal>

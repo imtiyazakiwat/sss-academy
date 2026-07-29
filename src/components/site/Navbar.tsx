@@ -8,7 +8,11 @@ import { Logo } from "@/components/site/Logo";
 import { MenuToggleIcon } from "@/components/ui/MenuToggleIcon";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
 import { useScroll } from "@/components/ui/use-scroll";
-import { courses, trackLabels, type CourseTrack } from "@/content/courses";
+import {
+  trackLabels,
+  type Course,
+  type CourseTrack,
+} from "@/content/courses";
 import { contact } from "@/content/site";
 import { ENQUIRY_HREF, focusEnquiryField } from "@/lib/anchors";
 import { cn } from "@/lib/cn";
@@ -43,7 +47,12 @@ const deskLinkActive = "bg-navy-50 text-navy-900";
 const mobileRow =
   "flex h-11 w-full items-center justify-start rounded-md px-4 text-sm font-medium transition-colors duration-200";
 
-export function Navbar() {
+/**
+ * `courses` arrives as a prop from the root layout — the catalogue is loaded on
+ * the server now, and this component runs in the browser. `trackLabels` is a
+ * static helper with no data dependency, so it stays a direct import.
+ */
+export function Navbar({ courses }: { courses: Course[] }) {
   const pathname = usePathname();
   const scrolled = useScroll(10);
 

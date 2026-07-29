@@ -5,7 +5,8 @@ import { Reveal } from "@/components/motion/Reveal";
 import { ArtHero } from "@/components/site/ArtHero";
 import { CourseCard } from "@/components/site/CourseCard";
 import { Container, Section } from "@/components/ui/Section";
-import { courses, type CourseTrack } from "@/content/courses";
+import type { CourseTrack } from "@/content/courses";
+import { getCourses } from "@/lib/cms/courses";
 import { breadcrumbSchema, courseListSchema } from "@/lib/schema";
 
 export const metadata: Metadata = {
@@ -23,7 +24,9 @@ const trackOrder: CourseTrack[] = [
   "bi",
 ];
 
-export default function CoursesPage() {
+export default async function CoursesPage() {
+  const { courses } = await getCourses();
+
   // One continuous grid rather than a section per track: grouping left every
   // short track with a half-empty row and stacked ~210px of section padding
   // between rows of cards. The track is still on each card.
@@ -71,7 +74,7 @@ export default function CoursesPage() {
         </Container>
       </Section>
 
-      <JsonLd data={courseListSchema} />
+      <JsonLd data={courseListSchema(courses)} />
       <JsonLd
         data={breadcrumbSchema([{ name: "Courses", href: "/courses" }])}
       />
