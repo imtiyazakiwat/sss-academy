@@ -35,7 +35,10 @@ export interface CourseState {
   topicWarning?: { topic: string; labs: string[] }[];
 }
 
-const idSchema = z.string().trim().min(1).max(200);
+const idSchema = z.string().trim().min(1).max(200).refine(
+  (v) => !v.includes("/"),
+  "Invalid document ID",
+);
 
 function readNumber(value: FormDataEntryValue | null): number | undefined {
   const text = String(value ?? "").trim();
@@ -106,7 +109,9 @@ export async function saveCourseAction(
   const session = await requireAdmin({ checkRevoked: true });
 
   const rawId = formData.get("id");
-  const id = typeof rawId === "string" && rawId ? rawId : null;
+  const id = typeof rawId === "string" && rawId
+    ? idSchema.safeParse(rawId).success ? rawId.trim() : null
+    : null;
 
   const parsed = courseSchema.safeParse(readForm(formData));
   if (!parsed.success) {

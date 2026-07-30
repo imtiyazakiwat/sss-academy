@@ -23,7 +23,10 @@ import { contact, site } from "@/content/site";
  * rather than at the end of its five days.
  */
 
-const idSchema = z.string().trim().min(1).max(200);
+const idSchema = z.string().trim().min(1).max(200).refine(
+  (v) => !v.includes("/"),
+  "Invalid document ID",
+);
 
 export interface ActionState {
   error?: string;
