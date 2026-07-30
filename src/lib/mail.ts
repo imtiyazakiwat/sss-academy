@@ -34,7 +34,6 @@ const noopTransport: MailTransport = {
   name: "noop",
   async send(message) {
     console.info("[mail] no transport configured; message not sent", {
-      to: message.to,
       subject: message.subject,
       bytes: message.body.length,
     });

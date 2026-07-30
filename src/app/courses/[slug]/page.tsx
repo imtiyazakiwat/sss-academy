@@ -45,7 +45,10 @@ export async function generateMetadata(
 
 export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
   const { slug } = await props.params;
-  const { courses } = await getCourses();
+  const [{ courses }, { placements }] = await Promise.all([
+    getCourses(),
+    getPlacements(),
+  ]);
   const course = findCourse(courses, slug);
   if (!course) notFound();
 
@@ -53,7 +56,6 @@ export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
   const schema = courseSchema(course);
 
   // A small selection of learner stories from related training tracks.
-  const { placements } = await getPlacements();
   const proof = placements.slice(0, 3);
 
   return (

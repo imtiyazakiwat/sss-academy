@@ -13,9 +13,13 @@ import { exportEnquiries } from "@/lib/cms/enquiries";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** RFC 4180: quote everything, double any embedded quote. */
+/** RFC 4180: quote everything, double any embedded quote. Neutralize formula injection. */
 function csvCell(value: string | number | null): string {
-  const text = value === null ? "" : String(value);
+  let text = value === null ? "" : String(value);
+  // Neutralize CSV/spreadsheet formula injection
+  if (/^[=+\-@\t\r]/.test(text)) {
+    text = `'${text}`;
+  }
   return `"${text.replace(/"/g, '""')}"`;
 }
 
@@ -32,7 +36,7 @@ const HEADERS = [
 ] as const;
 
 export async function GET(): Promise<Response> {
-  const session = await getSession();
+  const session = await getSession({ checkRevoked: true });
   if (!session) {
     return new Response("Forbidden", { status: 403 });
   }

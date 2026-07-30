@@ -46,7 +46,7 @@ export async function loginAction(
   const ip =
     headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
 
-  if (loginRateLimited(ip)) {
+  if (loginRateLimited(`${ip}:${parsed.data.email}`)) {
     return {
       error: "Too many sign-in attempts. Wait a few minutes and try again.",
     };

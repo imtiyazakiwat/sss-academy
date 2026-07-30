@@ -66,7 +66,11 @@ export async function writeAudit(entry: AuditEntry): Promise<void> {
       at: FieldValue.serverTimestamp(),
     });
   } catch (error) {
-    console.error("[admin/audit] write failed", entry, error);
+    console.error("[admin/audit] write failed", {
+      entity: entry.entity,
+      entityId: entry.entityId,
+      action: entry.action,
+    }, error);
   }
 }
 

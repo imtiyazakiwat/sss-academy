@@ -93,12 +93,11 @@ export async function POST(request: Request): Promise<NextResponse<EnquiryRespon
   const db = getDb();
 
   if (!db) {
-    // Not configured yet. Log so the enquiry is recoverable from Vercel logs
-    // rather than silently dropped, and tell the visitor the truth.
+    // Not configured yet. Log a non-PII marker so the event is visible in
+    // Vercel logs without exposing personal data.
     console.warn("[enquiry] Firestore not configured; enquiry not persisted", {
-      name: parsed.data.name,
-      phone: parsed.data.phone,
-      email: parsed.data.email,
+      hasName: Boolean(parsed.data.name),
+      hasContact: Boolean(parsed.data.phone || parsed.data.email),
       course,
     });
     return NextResponse.json(

@@ -57,7 +57,7 @@ export function AnnouncementPopup({ banners }: { banners: Banner[] }) {
 
   return (
     <div
-      className="fixed inset-0 z-100 flex items-center justify-center bg-navy-950/70 px-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-navy-950/70 px-4 backdrop-blur-sm"
       role="presentation"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) dismiss();

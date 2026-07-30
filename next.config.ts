@@ -10,11 +10,17 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    // Staff/team photos can come from any external host the admin pastes.
+    // Staff/team photos use unoptimized external URLs rather than proxying
+    // through Next.js image optimization — keeps the image proxy locked down.
+    unoptimized: false,
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**",
+        hostname: "firebasestorage.googleapis.com",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
       },
     ],
     formats: ["image/avif", "image/webp"],
@@ -37,6 +43,16 @@ const nextConfig: NextConfig = {
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
+          },
+        ],
+      },
+      {
+        source: "/admin/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value:
+              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://firebasestorage.googleapis.com; frame-ancestors 'none'",
           },
         ],
       },

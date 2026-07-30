@@ -12,7 +12,7 @@ import { breadcrumbSchema, courseListSchema } from "@/lib/schema";
 export const metadata: Metadata = {
   title: "Courses — SQL, Python, ETL Testing, PySpark, Snowflake & more",
   description:
-    "Eleven industry-oriented IT training tracks at SSS Academy: SQL, Python, ETL Testing, PySpark, Data Warehousing, Automation Testing, Power BI, Databricks, Azure Data Factory, NumPy and Snowflake.",
+    "Industry-oriented IT training tracks at SSS Academy: SQL, Python, ETL Testing, PySpark, Data Warehousing, Automation Testing, Power BI, Databricks, Azure Data Factory, NumPy and Snowflake.",
   alternates: { canonical: "/courses" },
 };
 
@@ -26,6 +26,7 @@ const trackOrder: CourseTrack[] = [
 
 export default async function CoursesPage() {
   const { courses } = await getCourses();
+  const trackCount = new Set(courses.map((c) => c.track)).size;
 
   // One continuous grid rather than a section per track: grouping left every
   // short track with a half-empty row and stacked ~210px of section padding
@@ -38,7 +39,7 @@ export default async function CoursesPage() {
     <>
       <ArtHero
         eyebrow="Courses"
-        title="Eleven tracks. One outcome: you can do the job."
+        title={`${trackCount} tracks. One outcome: you can do the job.`}
         description="Each course runs between one and three months, ends in real-time project work, and includes interview preparation. Not sure where to start? SQL first, then ETL Testing, is a path many of our learners followed."
         breadcrumb={[{ name: "Courses", href: "/courses" }]}
         image="/img/courses-bg.webp"

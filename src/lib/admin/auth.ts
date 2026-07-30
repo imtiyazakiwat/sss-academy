@@ -96,6 +96,9 @@ async function signInWithPassword(
     return null;
   }
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10_000);
+
   try {
     const response = await fetch(
       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${encodeURIComponent(key)}`,
@@ -104,6 +107,7 @@ async function signInWithPassword(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, returnSecureToken: true }),
         cache: "no-store",
+        signal: controller.signal,
       },
     );
 
@@ -123,6 +127,8 @@ async function signInWithPassword(
   } catch (error) {
     console.error("[admin/auth] identity toolkit request failed", error);
     return null;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

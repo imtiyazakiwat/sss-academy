@@ -42,7 +42,7 @@ export function NoticeEditor({
 
   const fieldError = (key: string) => state.fieldErrors?.[key];
   const expiry = notice?.expiresAtMs
-    ? new Date(notice.expiresAtMs).toISOString().slice(0, 10)
+    ? new Date(notice.expiresAtMs).toLocaleDateString("en-CA")
     : "";
 
   return (

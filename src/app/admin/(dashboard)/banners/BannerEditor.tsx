@@ -41,12 +41,16 @@ export function BannerEditor({
   }, [state.error]);
 
   const fieldError = (key: string) => state.fieldErrors?.[key];
-  const deadline = banner?.deadlineAtMs
-    ? new Date(banner.deadlineAtMs).toISOString().slice(0, 10)
-    : "";
-  const expiry = banner?.expiresAtMs
-    ? new Date(banner.expiresAtMs).toISOString().slice(0, 10)
-    : "";
+
+  /** Format ms timestamp as local YYYY-MM-DD for date inputs. */
+  const toDateInput = (ms: number) => {
+    const d = new Date(ms);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  };
+
+  const deadline = banner?.deadlineAtMs ? toDateInput(banner.deadlineAtMs) : "";
+  const expiry = banner?.expiresAtMs ? toDateInput(banner.expiresAtMs) : "";
 
   return (
     <form ref={formRef} action={formAction} className="flex flex-col gap-5">
