@@ -1,16 +1,15 @@
 import { CountUp } from "@/components/motion/CountUp";
 import { Reveal } from "@/components/motion/Reveal";
-import { courses } from "@/content/courses";
-import { placements } from "@/content/placements";
 
 /**
  * Overlapping stats card, lifted over the hero's lower edge.
  *
  * Every figure here is one the institute actually published: learner reach and
- * experience come from the legacy site, while course and story counts are
- * derived directly from the current content catalogue.
+ * experience come from the legacy site, while the course and story counts are
+ * passed in from the loaded catalogues.
  */
-const items = [
+function buildItems(courseCount: number, storyCount: number) {
+  return [
   {
     tint: "violet" as const,
     value: <CountUp value={1000} suffix="+" />,
@@ -29,7 +28,7 @@ const items = [
   },
   {
     tint: "ember" as const,
-    value: <CountUp value={courses.length} />,
+    value: <CountUp value={courseCount} />,
     label: "Courses Offered",
     sub: "Across five tracks",
     icon: (
@@ -46,7 +45,7 @@ const items = [
   {
     tint: "mint" as const,
     highlight: true,
-    value: <CountUp value={placements.length} />,
+    value: <CountUp value={storyCount} />,
     label: "Learner Stories",
     sub: "Shared in their words",
     icon: (
@@ -76,7 +75,8 @@ const items = [
       />
     ),
   },
-];
+  ];
+}
 
 const tints = {
   violet: "bg-violet-100 text-violet-700",
@@ -84,7 +84,15 @@ const tints = {
   mint: "bg-mint-100 text-mint-700",
 };
 
-export function StatsStrip() {
+export function StatsStrip({
+  courseCount,
+  storyCount,
+}: {
+  courseCount: number;
+  storyCount: number;
+}) {
+  const items = buildItems(courseCount, storyCount);
+
   return (
     <div className="relative z-10 -mt-4 px-5 sm:px-8 lg:-mt-10">
       <Reveal className="mx-auto max-w-7xl">

@@ -1,13 +1,13 @@
 import { z } from "zod";
 
-import { courses } from "@/content/courses";
-
-const courseSlugs = courses.map((c) => c.slug);
-
 /**
  * Mirrors the legacy PHP form's constraints (name 50, phone 10 digits,
  * email 100, message 500) and adds an optional course of interest.
  * Shared by the client form and the serverless route so validation cannot drift.
+ *
+ * The course is validated for shape only. The catalogue now lives in Firestore
+ * and this module is imported by the client form, so it cannot load it — the
+ * slug is checked against the live catalogue in the route handler instead.
  */
 export const enquirySchema = z.object({
   name: z
@@ -24,12 +24,7 @@ export const enquirySchema = z.object({
     .trim()
     .max(100, "Email must be 100 characters or fewer")
     .pipe(z.string().email("Enter a valid email address")),
-  course: z
-    .string()
-    .trim()
-    .refine((v) => v === "" || courseSlugs.includes(v), "Unknown course")
-    .optional()
-    .default(""),
+  course: z.string().trim().max(60, "Unknown course").optional().default(""),
   message: z
     .string()
     .trim()

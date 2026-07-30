@@ -1,11 +1,12 @@
 import type { MetadataRoute } from "next";
 
-import { courses } from "@/content/courses";
 import { labs } from "@/content/labs";
 import { site } from "@/content/site";
+import { getCourses } from "@/lib/cms/courses";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
+  const { courses } = await getCourses();
 
   const staticRoutes: MetadataRoute.Sitemap = (
     [

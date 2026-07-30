@@ -2,14 +2,11 @@ import Image from "next/image";
 
 import { Reveal } from "@/components/motion/Reveal";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
-import { initials, placements } from "@/content/placements";
+import { initials, type Placement } from "@/content/placements";
 import { socials } from "@/content/site";
 import { ENQUIRY_HREF } from "@/lib/anchors";
 
 const youtube = socials.find((s) => s.label === "YouTube")!.href;
-
-/** Four names off the top of the placement list, used for the avatar stack. */
-const avatars = placements.slice(0, 4);
 
 const avatarTints = [
   "bg-navy-900 text-white",
@@ -18,7 +15,10 @@ const avatarTints = [
   "bg-navy-600 text-white",
 ];
 
-export function Hero() {
+export function Hero({ placements }: { placements: Placement[] }) {
+  /** Four names off the top of the list, used for the avatar stack. */
+  const avatars = placements.slice(0, 4);
+
   return (
     <section className="relative overflow-hidden bg-white">
       {/* Soft violet wash behind the copy */}

@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 
 import { ArrowIcon, Button } from "@/components/ui/Button";
-import { courses } from "@/content/courses";
+import type { Course } from "@/content/courses";
 import { contact } from "@/content/site";
 import { ENQUIRY_NAME_FIELD_ID, focusEnquiryField } from "@/lib/anchors";
 import { cn } from "@/lib/cn";
@@ -18,9 +18,12 @@ type Status = "idle" | "submitting" | "success" | "error";
 const EMPTY = { name: "", phone: "", email: "", course: "", message: "" };
 
 export function EnquiryForm({
+  courses,
   defaultCourse = "",
   className,
 }: {
+  /** From the server — the catalogue lives in Firestore, not in this bundle. */
+  courses: Course[];
   defaultCourse?: string;
   className?: string;
 }) {

@@ -1,8 +1,10 @@
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Section";
-import { courses } from "@/content/courses";
+import { getCourses } from "@/lib/cms/courses";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const { courses } = await getCourses();
+
   return (
     <section className="relative overflow-hidden bg-navy-950 py-24 text-white sm:py-32">
       <div

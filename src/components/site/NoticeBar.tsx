@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { ArrowIcon } from "@/components/ui/Button";
-import { getActiveNotices } from "@/lib/notices";
+import { getActiveNotices } from "@/lib/cms/notices";
 
 /**
  * Renders genuine, staff-authored urgency only. If no active notice exists in

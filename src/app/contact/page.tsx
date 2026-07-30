@@ -5,8 +5,8 @@ import { Reveal } from "@/components/motion/Reveal";
 import { ContactHero } from "@/components/site/ContactHero";
 import { EnquiryForm } from "@/components/site/EnquiryForm";
 import { Container, Eyebrow, Section } from "@/components/ui/Section";
-import { getCourse } from "@/content/courses";
 import { contact, socials } from "@/content/site";
+import { findCourse, getCourses } from "@/lib/cms/courses";
 import { breadcrumbSchema } from "@/lib/schema";
 
 /* ─── Icons ─── */
@@ -66,7 +66,12 @@ export default async function ContactPage({
   searchParams: Promise<{ course?: string }>;
 }) {
   const { course } = await searchParams;
-  const defaultCourse = course && getCourse(course) ? course : undefined;
+  const { courses } = await getCourses();
+
+  // A `?course=` that is not in the catalogue is ignored rather than preselected
+  // — a stale link should not put an unknown slug into the enquiry.
+  const defaultCourse =
+    course && findCourse(courses, course) ? course : undefined;
 
   return (
     <>
@@ -85,6 +90,7 @@ export default async function ContactPage({
                 <div className="mt-4">
                   <EnquiryForm
                     key={defaultCourse ?? ""}
+                    courses={courses}
                     defaultCourse={defaultCourse}
                   />
                 </div>

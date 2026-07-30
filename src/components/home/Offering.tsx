@@ -2,9 +2,15 @@ import { Reveal } from "@/components/motion/Reveal";
 import { CourseCard } from "@/components/site/CourseCard";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
 import { Container, Section, SectionHeader } from "@/components/ui/Section";
-import { courses, featuredCourses } from "@/content/courses";
+import type { Course } from "@/content/courses";
 
-export function Offering() {
+export function Offering({
+  courses,
+  featuredCourses,
+}: {
+  courses: Course[];
+  featuredCourses: Course[];
+}) {
   return (
     <Section id="courses">
       <Container>

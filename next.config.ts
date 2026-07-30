@@ -10,7 +10,19 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    // Only local assets are used, so no remotePatterns are needed.
+    // Staff/team photos use unoptimized external URLs rather than proxying
+    // through Next.js image optimization — keeps the image proxy locked down.
+    unoptimized: false,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+    ],
     formats: ["image/avif", "image/webp"],
   },
 

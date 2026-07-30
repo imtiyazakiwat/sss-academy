@@ -7,6 +7,7 @@ import {
   initializeApp,
   type App,
 } from "firebase-admin/app";
+import { getAuth, type Auth } from "firebase-admin/auth";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 
 const APP_NAME = "sss-academy";
@@ -51,19 +52,43 @@ function readServiceAccount() {
   }
 }
 
-let cached: { app: App; db: Firestore } | null | undefined;
+type Cache = { app: App; db: Firestore } | null;
 
-export function getDb(): Firestore | null {
-  if (cached !== undefined) return cached?.db ?? null;
+/**
+ * The cache lives on `globalThis`, not in a module variable.
+ *
+ * `firebase-admin`'s app registry is process-global, but Next evaluates this
+ * module in more than one module graph and re-evaluates it on every HMR pass in
+ * dev. A module-scoped cache therefore resets to `undefined` while the app it
+ * created is still registered — the retry then finds the existing app, calls
+ * `settings()` on an already-initialised Firestore, throws, and caches null.
+ * That silently turned a fully configured deploy into "Firebase is not
+ * configured" until the next restart. Keying off the global registry keeps the
+ * cache and the registry in step.
+ */
+const CACHE_KEY = Symbol.for("sss-academy.firebase.cache");
+
+const globalCache = globalThis as typeof globalThis & {
+  [CACHE_KEY]?: Cache;
+};
+
+/**
+ * Single lazily-initialised named app shared by Firestore and Auth. Returns
+ * null rather than throwing so an unconfigured deploy still renders.
+ */
+function getAppOrNull(): App | null {
+  const cached = globalCache[CACHE_KEY];
+  if (cached !== undefined) return cached?.app ?? null;
 
   const credentials = readServiceAccount();
   if (!credentials) {
-    cached = null;
+    globalCache[CACHE_KEY] = null;
     return null;
   }
 
   try {
-    const app = getApps().find((a) => a.name === APP_NAME)
+    const existing = getApps().find((a) => a.name === APP_NAME);
+    const app = existing
       ? getApp(APP_NAME)
       : initializeApp(
           {
@@ -74,12 +99,44 @@ export function getDb(): Firestore | null {
         );
 
     const db = getFirestore(app);
-    db.settings({ ignoreUndefinedProperties: true });
-    cached = { app, db };
-    return db;
+
+    // Only meaningful once per Firestore instance, and the instance outlives
+    // this module. Throwing here must not fail initialisation — the setting is
+    // already applied from the pass that created it.
+    try {
+      db.settings({ ignoreUndefinedProperties: true });
+    } catch {
+      // Already initialised. Nothing to do.
+    }
+
+    globalCache[CACHE_KEY] = { app, db };
+    return app;
   } catch (error) {
+    // Deliberately not cached: a genuine failure here (network, malformed
+    // credential) should be retried on the next request rather than latched
+    // into a permanent "not configured" state.
     console.error("[firebase] initialisation failed", error);
-    cached = null;
+    return null;
+  }
+}
+
+export function getDb(): Firestore | null {
+  getAppOrNull();
+  return globalCache[CACHE_KEY]?.db ?? null;
+}
+
+/**
+ * Admin Auth, used by the dashboard to mint and verify session cookies.
+ * Node runtime only — never reachable from middleware or a client component.
+ */
+export function getAdminAuth(): Auth | null {
+  const app = getAppOrNull();
+  if (!app) return null;
+
+  try {
+    return getAuth(app);
+  } catch (error) {
+    console.error("[firebase] auth initialisation failed", error);
     return null;
   }
 }

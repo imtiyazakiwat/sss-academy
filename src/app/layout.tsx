@@ -5,6 +5,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { Footer } from "@/components/site/Footer";
 import { Navbar } from "@/components/site/Navbar";
 import { NoticeBar } from "@/components/site/NoticeBar";
+import { getCourses } from "@/lib/cms/courses";
 import { organizationSchema } from "@/lib/schema";
 import { site } from "@/content/site";
 
@@ -86,9 +87,16 @@ export const viewport: Viewport = {
   colorScheme: "light",
 };
 
-export default function RootLayout({
+/**
+ * The nav, the footer and the organisation schema all list courses, so the
+ * catalogue is loaded once here and passed down. `Navbar` is a client component
+ * and cannot read the loader itself.
+ */
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const { courses } = await getCourses();
+
   return (
     <html
       lang="en-IN"
@@ -111,22 +119,22 @@ export default function RootLayout({
 
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-100 focus:rounded-full focus:bg-navy-900 focus:px-4 focus:py-2 focus:text-sm focus:text-white"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-full focus:bg-navy-900 focus:px-4 focus:py-2 focus:text-sm focus:text-white"
         >
           Skip to content
         </a>
 
-        <Navbar />
+        <Navbar courses={courses} />
 
         <main id="main" className="flex-1 pt-[var(--header-h)]">
           <NoticeBar />
           {children}
         </main>
 
-        <Footer />
+        <Footer courses={courses} />
 
         {/* Organisation-level structured data, carried over and expanded from the legacy site */}
-        <JsonLd data={organizationSchema} />
+        <JsonLd data={organizationSchema(courses)} />
       </body>
     </html>
   );

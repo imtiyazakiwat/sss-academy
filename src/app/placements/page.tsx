@@ -4,8 +4,8 @@ import { JsonLd } from "@/components/JsonLd";
 import { PlacementStories } from "@/components/site/PlacementStories";
 import { PlacementsHero } from "@/components/site/PlacementsHero";
 import { Container, Section } from "@/components/ui/Section";
-import { placements } from "@/content/placements";
 import { site } from "@/content/site";
+import { getPlacements } from "@/lib/cms/placements";
 import { breadcrumbSchema } from "@/lib/schema";
 
 export const metadata: Metadata = {
@@ -30,7 +30,14 @@ const learnerThemes = [
   },
 ];
 
-export default function PlacementsPage() {
+/**
+ * Stories come from the dashboard once an admin has imported or added them, and
+ * fall back to the static array until then — so this page renders identically
+ * with no Firebase config at all.
+ */
+export default async function PlacementsPage() {
+  const { placements } = await getPlacements();
+
   return (
     <>
       <PlacementsHero

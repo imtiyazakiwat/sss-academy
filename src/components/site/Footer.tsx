@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { Container } from "@/components/ui/Section";
-import { courses } from "@/content/courses";
+import type { Course } from "@/content/courses";
 import { contact, nav, site, socials } from "@/content/site";
 
 const socialIcons: Record<string, React.ReactNode> = {
@@ -27,7 +27,7 @@ const socialIcons: Record<string, React.ReactNode> = {
   ),
 };
 
-export function Footer() {
+export function Footer({ courses }: { courses: Course[] }) {
   return (
     <footer
       className="bg-[#F5F3ED]"

@@ -1,6 +1,7 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 
+import { getCourses } from "@/lib/cms/courses";
 import { enquirySchema, type EnquiryResponse } from "@/lib/enquiry";
 import { getDb } from "@/lib/firebase";
 
@@ -80,16 +81,24 @@ export async function POST(request: Request): Promise<NextResponse<EnquiryRespon
     );
   }
 
+  // The shared schema only checks the shape of `course` — it is imported by the
+  // client form and cannot reach the catalogue. An unknown slug is dropped
+  // rather than rejected: the course is optional, and a stale bookmark should
+  // not cost us the enquiry.
+  const { courses } = await getCourses();
+  const course = courses.some((c) => c.slug === parsed.data.course)
+    ? parsed.data.course
+    : "";
+
   const db = getDb();
 
   if (!db) {
-    // Not configured yet. Log so the enquiry is recoverable from Vercel logs
-    // rather than silently dropped, and tell the visitor the truth.
+    // Not configured yet. Log a non-PII marker so the event is visible in
+    // Vercel logs without exposing personal data.
     console.warn("[enquiry] Firestore not configured; enquiry not persisted", {
-      name: parsed.data.name,
-      phone: parsed.data.phone,
-      email: parsed.data.email,
-      course: parsed.data.course,
+      hasName: Boolean(parsed.data.name),
+      hasContact: Boolean(parsed.data.phone || parsed.data.email),
+      course,
     });
     return NextResponse.json(
       {
@@ -104,6 +113,7 @@ export async function POST(request: Request): Promise<NextResponse<EnquiryRespon
   try {
     await db.collection("enquiries").add({
       ...parsed.data,
+      course,
       source: "website",
       status: "new",
       userAgent: request.headers.get("user-agent") ?? null,

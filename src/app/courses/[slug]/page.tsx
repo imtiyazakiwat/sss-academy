@@ -7,18 +7,19 @@ import { CourseCard } from "@/components/site/CourseCard";
 import { CourseHero } from "@/components/site/CourseHero";
 import { ArrowIcon, ButtonLink } from "@/components/ui/Button";
 import { Container, Eyebrow, Section } from "@/components/ui/Section";
-import {
-  courses,
-  durationLabel,
-  getCourse,
-  relatedCourses,
-} from "@/content/courses";
-import { placements } from "@/content/placements";
+import { durationLabel } from "@/content/courses";
 import { enquiryHref } from "@/lib/anchors";
+import { findCourse, getCourses, relatedFrom } from "@/lib/cms/courses";
+import { getPlacements } from "@/lib/cms/placements";
 import { breadcrumbSchema, courseSchema } from "@/lib/schema";
 
-/** All eleven courses are known at build time — prerender every detail page. */
-export function generateStaticParams() {
+/**
+ * Prerenders whatever the catalogue holds at build time. `dynamicParams` stays
+ * at its default of `true`, so a course added in the dashboard afterwards still
+ * renders on demand — `revalidateTag("courses")` on save is what publishes it.
+ */
+export async function generateStaticParams() {
+  const { courses } = await getCourses();
   return courses.map((course) => ({ slug: course.slug }));
 }
 
@@ -26,7 +27,8 @@ export async function generateMetadata(
   props: PageProps<"/courses/[slug]">,
 ): Promise<Metadata> {
   const { slug } = await props.params;
-  const course = getCourse(slug);
+  const { courses } = await getCourses();
+  const course = findCourse(courses, slug);
   if (!course) return { title: "Course not found" };
 
   return {
@@ -43,11 +45,15 @@ export async function generateMetadata(
 
 export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
   const { slug } = await props.params;
-  const course = getCourse(slug);
+  const [{ courses }, { placements }] = await Promise.all([
+    getCourses(),
+    getPlacements(),
+  ]);
+  const course = findCourse(courses, slug);
   if (!course) notFound();
 
-  const related = relatedCourses(course.slug);
-  const schema = courseSchema(course.slug);
+  const related = relatedFrom(courses, course.slug);
+  const schema = courseSchema(course);
 
   // A small selection of learner stories from related training tracks.
   const proof = placements.slice(0, 3);
@@ -192,7 +198,7 @@ export default async function CoursePage(props: PageProps<"/courses/[slug]">) {
         </Container>
       </Section>
 
-      {schema ? <JsonLd data={schema} /> : null}
+      <JsonLd data={schema} />
       <JsonLd
         data={breadcrumbSchema([
           { name: "Courses", href: "/courses" },
