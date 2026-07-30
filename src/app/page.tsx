@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { JsonLd } from "@/components/JsonLd";
 import { Approach } from "@/components/home/Approach";
+import { DemoClasses } from "@/components/home/DemoClasses";
 import { Hero } from "@/components/home/Hero";
 import { Problem } from "@/components/home/Problem";
 import { Proof } from "@/components/home/Proof";
@@ -13,6 +14,7 @@ import { getActiveBanners } from "@/lib/cms/banners";
 import { getCourses } from "@/lib/cms/courses";
 import { getPlacements } from "@/lib/cms/placements";
 import { getTeam } from "@/lib/cms/team";
+import { getActiveVideos } from "@/lib/cms/videos";
 import { faqSchema } from "@/lib/schema";
 
 export const metadata: Metadata = {
@@ -25,12 +27,13 @@ export const metadata: Metadata = {
  * render rather than four.
  */
 export default async function HomePage() {
-  const [{ courses }, { placements, byPackage }, { founder }, banners] =
+  const [{ courses }, { placements, byPackage }, { founder }, banners, videos] =
     await Promise.all([
       getCourses(),
       getPlacements(),
       getTeam(),
       getActiveBanners(),
+      getActiveVideos(),
     ]);
 
   return (
@@ -40,6 +43,7 @@ export default async function HomePage() {
       <StatsStrip courseCount={courses.length} storyCount={placements.length} />
       <Problem />
       <Approach />
+      <DemoClasses videos={videos} />
       <Proof placements={byPackage} />
       {founder ? <FounderBlock founder={founder} tone="light" /> : null}
       <Faq />

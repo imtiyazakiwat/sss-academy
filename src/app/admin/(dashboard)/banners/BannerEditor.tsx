@@ -170,6 +170,44 @@ export function BannerEditor({
         </Field>
 
         <Field
+          id={`${uid}-whatsappNumber`}
+          label="WhatsApp number"
+          error={fieldError("whatsappNumber")}
+          optional
+          hint="Digits only, with country code (e.g. 917676831143)"
+        >
+          <input
+            id={`${uid}-whatsappNumber`}
+            name="whatsappNumber"
+            type="text"
+            maxLength={15}
+            defaultValue={banner?.whatsappNumber ?? "7676831143"}
+            aria-invalid={Boolean(fieldError("whatsappNumber"))}
+            className={inputClass(Boolean(fieldError("whatsappNumber")))}
+            placeholder="7676831143"
+          />
+        </Field>
+
+        <Field
+          id={`${uid}-whatsappMessage`}
+          label="WhatsApp pre-filled message"
+          error={fieldError("whatsappMessage")}
+          optional
+          hint="Message visitors send when they tap the WhatsApp button"
+        >
+          <input
+            id={`${uid}-whatsappMessage`}
+            name="whatsappMessage"
+            type="text"
+            maxLength={200}
+            defaultValue={banner?.whatsappMessage ?? "I am interested in ETL course"}
+            aria-invalid={Boolean(fieldError("whatsappMessage"))}
+            className={inputClass(Boolean(fieldError("whatsappMessage")))}
+            placeholder="I am interested in ETL course"
+          />
+        </Field>
+
+        <Field
           id={`${uid}-deadlineLabel`}
           label="Footer label"
           error={fieldError("deadlineLabel")}

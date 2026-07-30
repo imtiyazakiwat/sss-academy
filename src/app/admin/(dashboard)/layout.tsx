@@ -38,6 +38,7 @@ export default async function DashboardLayout({
       items: [
         { href: "/admin/notices", label: "Notices" },
         { href: "/admin/banners", label: "Banners" },
+        { href: "/admin/videos", label: "YouTube Videos" },
         { href: "/admin/courses", label: "Courses" },
         { href: "/admin/placements", label: "Placements" },
         { href: "/admin/team", label: "Staff" },
