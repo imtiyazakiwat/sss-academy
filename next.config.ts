@@ -46,16 +46,6 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      {
-        source: "/admin/:path*",
-        headers: [
-          {
-            key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://firebasestorage.googleapis.com; frame-ancestors 'none'",
-          },
-        ],
-      },
     ];
   },
 

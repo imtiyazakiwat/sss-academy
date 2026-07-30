@@ -9,6 +9,11 @@ import type { ReactNode } from "react";
  * `data-admin-shell` is what stands down the public chrome (navbar, notice bar,
  * footer) that the root layout renders for every route. Same mechanism the
  * playground uses; see the rules at the end of `globals.css`.
+ *
+ * CSP nonce: the middleware sets `x-nonce` on every admin request. Next.js App
+ * Router reads it automatically and applies it to its inline bootstrap scripts.
+ * `dynamic = "force-dynamic"` ensures the layout is never statically rendered,
+ * so the nonce is always fresh.
  */
 export const metadata: Metadata = {
   title: "Admin",
