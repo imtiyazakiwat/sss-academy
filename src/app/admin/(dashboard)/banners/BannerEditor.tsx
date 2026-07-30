@@ -42,12 +42,8 @@ export function BannerEditor({
 
   const fieldError = (key: string) => state.fieldErrors?.[key];
 
-  /** Format ms timestamp as local YYYY-MM-DD for date inputs. */
-  const toDateInput = (ms: number) => {
-    const d = new Date(ms);
-    const pad = (n: number) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  };
+  /** Format ms timestamp as UTC YYYY-MM-DD for date inputs (matches storage). */
+  const toDateInput = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 
   const deadline = banner?.deadlineAtMs ? toDateInput(banner.deadlineAtMs) : "";
   const expiry = banner?.expiresAtMs ? toDateInput(banner.expiresAtMs) : "";

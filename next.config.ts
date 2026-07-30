@@ -52,7 +52,7 @@ const nextConfig: NextConfig = {
           {
             key: "Content-Security-Policy",
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://firebasestorage.googleapis.com; frame-ancestors 'none'",
+              "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://firebasestorage.googleapis.com; frame-ancestors 'none'",
           },
         ],
       },
