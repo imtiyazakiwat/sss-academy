@@ -196,8 +196,8 @@ export async function getTeam(): Promise<TeamData> {
   if (records.length === 0) return staticFallback();
 
   const ordered = [...records].sort((a, b) => a.order - b.order);
-  const founder = ordered.find((m) => m.isFounder) ?? null;
-  const staff = ordered.filter((m) => !m.isFounder);
+  const founder = ordered.find((m) => m.isFounder) ?? ordered[0] ?? null;
+  const staff = ordered.filter((m) => m.id !== founder?.id);
 
   return { members: ordered, founder, staff, source: "firestore" };
 }

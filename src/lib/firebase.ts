@@ -141,4 +141,10 @@ export function getAdminAuth(): Auth | null {
   }
 }
 
-export const isFirebaseConfigured = () => getDb() !== null;
+/**
+ * True only when both Firestore (service account) and the Web API key are
+ * present, i.e. all the pieces needed for both admin reads and Identity
+ * Toolkit sign-in are available.
+ */
+export const isFirebaseConfigured = () =>
+  getDb() !== null && Boolean(process.env.FIREBASE_WEB_API_KEY);

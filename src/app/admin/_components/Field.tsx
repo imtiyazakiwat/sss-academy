@@ -47,13 +47,16 @@ export function Field({
             </span>
           ) : null}
         </label>
-        {optional ? (
-          <span className="text-[0.6875rem] text-ink-500">Optional</span>
-        ) : hint ? (
-          <span id={`${id}-hint`} className="text-[0.6875rem] text-ink-500">
-            {hint}
-          </span>
-        ) : null}
+        <span className="flex items-baseline gap-2">
+          {optional ? (
+            <span className="text-[0.6875rem] text-ink-500">Optional</span>
+          ) : null}
+          {hint ? (
+            <span id={`${id}-hint`} className="text-[0.6875rem] text-ink-500">
+              {hint}
+            </span>
+          ) : null}
+        </span>
       </div>
       {children}
       {error ? (
