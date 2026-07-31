@@ -26,6 +26,8 @@ export interface Banner {
   primaryHref: string;
   secondaryLabel?: string;
   secondaryHref?: string;
+  whatsappNumber?: string;
+  whatsappMessage?: string;
   deadlineLabel?: string;
   deadlineAtMs?: number;
 }
@@ -38,6 +40,8 @@ export interface BannerRecord {
   primaryHref: string;
   secondaryLabel: string;
   secondaryHref: string;
+  whatsappNumber: string;
+  whatsappMessage: string;
   deadlineLabel: string;
   active: boolean;
   order: number;
@@ -80,6 +84,22 @@ export const bannerSchema = z.object({
     .optional()
     .default(""),
   secondaryHref: hrefField.optional().default(""),
+  whatsappNumber: z
+    .string()
+    .trim()
+    .max(15, "Keep it under 15 digits")
+    .refine(
+      (v) => v === "" || /^\d{10,15}$/.test(v),
+      "Enter a valid phone number (digits only, 10–15 chars)",
+    )
+    .optional()
+    .default(""),
+  whatsappMessage: z
+    .string()
+    .trim()
+    .max(200, "Keep the message under 200 characters")
+    .optional()
+    .default(""),
   deadlineLabel: z
     .string()
     .trim()
@@ -117,6 +137,8 @@ function toRecord(id: string, data: Record<string, unknown>): BannerRecord {
     primaryHref: typeof data.primaryHref === "string" ? data.primaryHref : "",
     secondaryLabel: typeof data.secondaryLabel === "string" ? data.secondaryLabel : "",
     secondaryHref: typeof data.secondaryHref === "string" ? data.secondaryHref : "",
+    whatsappNumber: typeof data.whatsappNumber === "string" ? data.whatsappNumber : "",
+    whatsappMessage: typeof data.whatsappMessage === "string" ? data.whatsappMessage : "",
     deadlineLabel:
       typeof data.deadlineLabel === "string" && data.deadlineLabel
         ? data.deadlineLabel
@@ -176,6 +198,8 @@ export async function getActiveBanners(): Promise<Banner[]> {
         primaryHref,
         secondaryLabel,
         secondaryHref,
+        whatsappNumber,
+        whatsappMessage,
         deadlineLabel,
         deadlineAtMs,
       }) => ({
@@ -186,6 +210,8 @@ export async function getActiveBanners(): Promise<Banner[]> {
         primaryHref,
         secondaryLabel: secondaryLabel || undefined,
         secondaryHref: secondaryHref || undefined,
+        whatsappNumber: whatsappNumber || undefined,
+        whatsappMessage: whatsappMessage || undefined,
         deadlineLabel: deadlineLabel || undefined,
         deadlineAtMs: deadlineAtMs ?? undefined,
       }),
@@ -233,6 +259,8 @@ function toDocument(input: BannerInput) {
     primaryHref: input.primaryHref,
     secondaryLabel: input.secondaryLabel || null,
     secondaryHref: input.secondaryHref || null,
+    whatsappNumber: input.whatsappNumber || null,
+    whatsappMessage: input.whatsappMessage || null,
     deadlineLabel: input.deadlineLabel || null,
     deadlineAt: input.deadlineAt
       ? Timestamp.fromDate(new Date(input.deadlineAt))

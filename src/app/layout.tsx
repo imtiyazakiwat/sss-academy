@@ -97,6 +97,14 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const { courses } = await getCourses();
 
+  // Navbar and Footer are client components — only serialize the fields they
+  // actually use to keep the RSC payload lean.
+  const navCourses = courses.map(({ slug, title, track }) => ({
+    slug,
+    title,
+    track,
+  }));
+
   return (
     <html
       lang="en-IN"
@@ -124,14 +132,14 @@ export default async function RootLayout({
           Skip to content
         </a>
 
-        <Navbar courses={courses} />
+        <Navbar courses={navCourses as typeof courses} />
 
         <main id="main" className="flex-1 pt-[var(--header-h)]">
           <NoticeBar />
           {children}
         </main>
 
-        <Footer courses={courses} />
+        <Footer courses={navCourses as typeof courses} />
 
         {/* Organisation-level structured data, carried over and expanded from the legacy site */}
         <JsonLd data={organizationSchema(courses)} />

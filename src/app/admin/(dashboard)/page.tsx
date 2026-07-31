@@ -126,7 +126,13 @@ export default async function AdminOverviewPage() {
           ) : (
             <ul className="mt-4 flex flex-col divide-y divide-ink-100">
               {recent.map((enquiry) => {
-                const course = enquiry.course ? getCourse(enquiry.course) : null;
+                // Prefer CMS title; fall back to static catalogue for
+                // courses added before the dashboard existed.
+                const courseLabel = enquiry.course
+                  ? courses?.find((c) => c.slug === enquiry.course)?.title ??
+                    getCourse(enquiry.course)?.title ??
+                    enquiry.course
+                  : null;
                 return (
                   <li key={enquiry.id} className="py-3 first:pt-0 last:pb-0">
                     <div className="flex flex-wrap items-center justify-between gap-2">
@@ -144,7 +150,7 @@ export default async function AdminOverviewPage() {
                       </span>
                     </div>
                     <p className="mt-1 text-xs text-ink-500">
-                      {course?.title ?? enquiry.course ?? "No course selected"} ·{" "}
+                      {courseLabel ?? "No course selected"} ·{" "}
                       {enquiry.phone}
                     </p>
                   </li>

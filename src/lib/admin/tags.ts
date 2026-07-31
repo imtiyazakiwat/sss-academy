@@ -17,6 +17,7 @@ export const TAGS = {
   notices: "notices",
   batches: "batches",
   banners: "banners",
+  videos: "videos",
 } as const;
 
 export type CacheTag = (typeof TAGS)[keyof typeof TAGS];
@@ -29,3 +30,4 @@ export const SETTINGS_TAG = TAGS.settings;
 export const NOTICES_TAG = TAGS.notices;
 export const BATCHES_TAG = TAGS.batches;
 export const BANNERS_TAG = TAGS.banners;
+export const VIDEOS_TAG = TAGS.videos;

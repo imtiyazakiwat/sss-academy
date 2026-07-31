@@ -39,6 +39,8 @@ function readForm(formData: FormData) {
     primaryHref: formData.get("primaryHref") ?? "",
     secondaryLabel: formData.get("secondaryLabel") ?? "",
     secondaryHref: formData.get("secondaryHref") ?? "",
+    whatsappNumber: formData.get("whatsappNumber") ?? "",
+    whatsappMessage: formData.get("whatsappMessage") ?? "",
     deadlineLabel: formData.get("deadlineLabel") ?? "",
     deadlineAt: formData.get("deadlineAt") ?? "",
     active: formData.get("active") === "on",
@@ -137,6 +139,8 @@ export async function toggleBannerAction(formData: FormData): Promise<void> {
     primaryHref: before.primaryHref,
     secondaryLabel: before.secondaryLabel,
     secondaryHref: before.secondaryHref,
+    whatsappNumber: before.whatsappNumber,
+    whatsappMessage: before.whatsappMessage,
     deadlineLabel: before.deadlineLabel,
     deadlineAt: before.deadlineAtMs
       ? new Date(before.deadlineAtMs).toISOString().slice(0, 10)

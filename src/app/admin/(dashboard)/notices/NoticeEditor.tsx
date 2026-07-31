@@ -41,9 +41,10 @@ export function NoticeEditor({
   }, [state.error]);
 
   const fieldError = (key: string) => state.fieldErrors?.[key];
-  const expiry = notice?.expiresAtMs
-    ? new Date(notice.expiresAtMs).toISOString().slice(0, 10)
-    : "";
+
+  /** Format ms timestamp as UTC YYYY-MM-DD for date inputs (matches storage). */
+  const toDateInput = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+  const expiry = notice?.expiresAtMs ? toDateInput(notice.expiresAtMs) : "";
 
   return (
     <form ref={formRef} action={formAction} className="flex flex-col gap-5">
