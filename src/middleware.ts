@@ -41,9 +41,9 @@ export function middleware(request: NextRequest) {
   const csp = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
-    `style-src 'self' 'nonce-${nonce}'`,
+    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     "img-src 'self' https: data:",
-    "font-src 'self'",
+    "font-src 'self' https://fonts.gstatic.com data:",
     "connect-src 'self' https://identitytoolkit.googleapis.com https://firebasestorage.googleapis.com",
     "frame-ancestors 'none'",
   ].join("; ");

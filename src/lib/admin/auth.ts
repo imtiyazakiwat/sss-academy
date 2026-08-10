@@ -89,11 +89,12 @@ interface SignInResult {
 async function signInWithPassword(
   email: string,
   password: string,
-): Promise<SignInResult | null> {
-  const key = process.env.FIREBASE_WEB_API_KEY;
+): Promise<{ result: SignInResult | null; missingApiKey?: boolean }> {
+  const rawKey = process.env.FIREBASE_WEB_API_KEY;
+  const key = rawKey?.trim().replace(/^["']|["']$/g, "");
   if (!key) {
     console.error("[admin/auth] FIREBASE_WEB_API_KEY is not set");
-    return null;
+    return { result: null, missingApiKey: true };
   }
 
   const controller = new AbortController();
@@ -114,19 +115,21 @@ async function signInWithPassword(
     const data = (await response.json()) as {
       idToken?: string;
       localId?: string;
-      error?: { message?: string };
+      error?: { message?: string; code?: number };
     };
 
     if (!response.ok || !data.idToken || !data.localId) {
-      // Logged, never surfaced: the reason is useful to us and to an attacker.
-      console.warn("[admin/auth] sign-in rejected", data.error?.message);
-      return null;
+      console.warn(
+        `[admin/auth] sign-in rejected (HTTP ${response.status}):`,
+        data.error?.message ?? "Unknown error",
+      );
+      return { result: null };
     }
 
-    return { idToken: data.idToken, uid: data.localId };
+    return { result: { idToken: data.idToken, uid: data.localId } };
   } catch (error) {
     console.error("[admin/auth] identity toolkit request failed", error);
-    return null;
+    return { result: null };
   } finally {
     clearTimeout(timeout);
   }
@@ -138,7 +141,12 @@ async function loadAdminRecord(uid: string): Promise<AdminSession | null> {
 
   try {
     const snap = await db.collection("admins").doc(uid).get();
-    if (!snap.exists) return null;
+    if (!snap.exists) {
+      console.warn(
+        `[admin/auth] authenticated user (UID: ${uid}) has no admins/${uid} record in Firestore`,
+      );
+      return null;
+    }
 
     const data = snap.data() ?? {};
     return {
@@ -168,7 +176,17 @@ export async function login(
     };
   }
 
-  const credentials = await signInWithPassword(email, password);
+  const { result: credentials, missingApiKey } = await signInWithPassword(
+    email,
+    password,
+  );
+  if (missingApiKey) {
+    return {
+      ok: false,
+      error:
+        "FIREBASE_WEB_API_KEY is not configured on this deployment. Set FIREBASE_WEB_API_KEY in Vercel.",
+    };
+  }
   if (!credentials) return { ok: false, error: GENERIC_FAILURE };
 
   // The authorization gate. No admins/{uid} document, no access — even though
