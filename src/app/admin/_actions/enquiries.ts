@@ -38,7 +38,7 @@ export async function updateStatusAction(
   _previous: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const session = await requireAdmin({ checkRevoked: true });
+  const session = await requireAdmin();
 
   const parsed = z
     .object({ id: idSchema, status: statusSchema })
@@ -73,7 +73,7 @@ export async function addReplyAction(
   _previous: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const session = await requireAdmin({ checkRevoked: true });
+  const session = await requireAdmin();
 
   const parsed = z
     .object({ id: idSchema })
