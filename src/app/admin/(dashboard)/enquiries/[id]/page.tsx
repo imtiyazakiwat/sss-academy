@@ -159,17 +159,36 @@ export default async function EnquiryDetailPage(
               Reach them
             </h2>
             <div className="mt-3 flex flex-col gap-2">
-              <ContactAction href={telHref} label="Call" value={enquiry.phone} />
+              <ContactAction
+                href={telHref}
+                label="Call"
+                value={enquiry.phone}
+                icon={
+                  <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                }
+              />
               <ContactAction
                 href={whatsappHref}
                 label="WhatsApp"
                 value={enquiry.phone}
                 external
+                icon={
+                  <svg className="size-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.197 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.572-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884" />
+                  </svg>
+                }
               />
               <ContactAction
                 href={mailHref}
                 label="Email"
                 value={enquiry.email}
+                icon={
+                  <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                }
               />
             </div>
           </Card>
@@ -208,21 +227,26 @@ function ContactAction({
   href,
   label,
   value,
+  icon,
   external = false,
 }: {
   href: string;
   label: string;
   value: string;
+  icon?: React.ReactNode;
   external?: boolean;
 }) {
   return (
     <a
       href={href}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className="flex items-baseline justify-between gap-3 rounded-lg border border-ink-200 px-3 py-2 transition-colors duration-150 hover:border-navy-300 hover:bg-white"
+      className="group flex items-center justify-between gap-3 rounded-lg border border-ink-200 bg-[#fffdf8] px-3.5 py-2.5 transition-all duration-200 hover:border-navy-400 hover:bg-white hover:shadow-subtle"
     >
-      <span className="text-sm font-semibold text-navy-900">{label}</span>
-      <span className="min-w-0 truncate text-xs text-ink-500">{value}</span>
+      <div className="flex items-center gap-2.5 min-w-0">
+        {icon && <span className="text-ink-400 group-hover:text-navy-700 transition-colors">{icon}</span>}
+        <span className="text-sm font-semibold text-navy-900 group-hover:text-navy-950">{label}</span>
+      </div>
+      <span className="min-w-0 truncate text-xs font-mono text-ink-500 group-hover:text-ink-700 transition-colors">{value}</span>
     </a>
   );
 }

@@ -1,23 +1,13 @@
 import "server-only";
 
-/**
- * Outbound mail transport.
- *
- * There is no transport wired up yet. Every caller persists its message to
- * Firestore first and treats sending as a separate, fallible step, so replies
- * written in the dashboard are never lost to a mail failure — they are simply
- * marked `not-sent` until a real transport exists.
- *
- * Adding one means replacing `noopTransport` and nothing else. Note for later:
- * Gmail cannot send with an API key. It needs an OAuth2 refresh token with the
- * `gmail.send` scope, or a service account with domain-wide delegation on a
- * Workspace domain. SMTP with an app password is the shortest path.
- */
+import { smtpTransport } from "@/lib/smtp-transport";
 
 export interface MailMessage {
   to: string;
   subject: string;
   body: string;
+  html?: string;
+  from?: string;
   replyTo?: string;
 }
 
@@ -43,16 +33,25 @@ const noopTransport: MailTransport = {
 
 let transport: MailTransport = noopTransport;
 
-/** Swap the transport in. Called from a bootstrap module once one exists. */
+/** Swap the transport in. */
 export function setMailTransport(next: MailTransport): void {
   transport = next;
 }
 
 export function isMailConfigured(): boolean {
-  return transport.name !== "noop";
+  if (transport.name !== "noop") return true;
+  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    setMailTransport(smtpTransport);
+    return true;
+  }
+  return false;
 }
 
 export async function sendMail(message: MailMessage): Promise<MailResult> {
+  if (transport.name === "noop" && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    setMailTransport(smtpTransport);
+  }
+
   try {
     return await transport.send(message);
   } catch (error) {

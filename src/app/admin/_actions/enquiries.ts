@@ -14,7 +14,8 @@ import {
   type DeliveryStatus,
 } from "@/lib/cms/enquiries";
 import { isMailConfigured, sendMail } from "@/lib/mail";
-import { contact, site } from "@/content/site";
+import { contact } from "@/content/site";
+import { adminReplyTemplate } from "@/lib/email-templates";
 
 /**
  * Every action here follows the same order: authorize, validate, write, audit,
@@ -101,16 +102,28 @@ export async function addReplyAction(
     if (!isMailConfigured()) {
       deliveryStatus = "not-sent";
       notice =
-        "Saved. Email sending is not wired up yet, so send this from your mail client and the record here stays as the log.";
+        "Saved as log. SMTP credentials are not configured yet (set SMTP_USER & SMTP_PASS in environment).";
     } else {
+      const template = adminReplyTemplate({
+        userName: enquiry.name || "Student",
+        replyBody: parsed.data.body,
+        adminName: session.name,
+        courseName: enquiry.course,
+      });
+
       const result = await sendMail({
         to: enquiry.email,
-        subject: `Re: your enquiry to ${site.name}`,
-        body: parsed.data.body,
+        subject: template.subject,
+        body: template.text,
+        html: template.html,
         replyTo: contact.email,
       });
       deliveryStatus = result.ok ? "sent" : "failed";
-      if (!result.ok) notice = `Saved, but sending failed: ${result.error}`;
+      if (!result.ok) {
+        notice = `Saved, but email delivery failed: ${result.error}`;
+      } else {
+        notice = `Email sent successfully to ${enquiry.email}.`;
+      }
     }
   }
 

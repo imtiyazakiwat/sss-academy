@@ -172,14 +172,15 @@ export default async function EnquiriesPage(
                 return (
                   <tr
                     key={enquiry.id}
-                    className="border-b border-ink-100 last:border-0 hover:bg-ink-50/60"
+                    className="group border-b border-ink-100 last:border-0 transition-colors duration-150 hover:bg-navy-50/40"
                   >
                     <td className="px-4 py-3 align-top">
                       <Link
                         href={`/admin/enquiries/${enquiry.id}`}
-                        className="font-semibold text-navy-900 underline decoration-ink-300 underline-offset-4 hover:decoration-navy-700"
+                        className="inline-flex items-center gap-1 font-semibold text-navy-900 underline decoration-ink-300 underline-offset-4 group-hover:text-navy-700 group-hover:decoration-navy-700"
                       >
                         {enquiry.name || "(no name)"}
+                        <span className="opacity-0 transition-opacity duration-150 group-hover:opacity-100 text-xs">→</span>
                       </Link>
                       <p className="mt-1 line-clamp-1 max-w-md text-xs text-ink-500 sm:hidden">
                         {enquiry.phone}

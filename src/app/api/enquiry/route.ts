@@ -1,9 +1,12 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 
+import { contact } from "@/content/site";
 import { getCourses } from "@/lib/cms/courses";
+import { enquiryNotificationTemplate } from "@/lib/email-templates";
 import { enquirySchema, type EnquiryResponse } from "@/lib/enquiry";
 import { getDb } from "@/lib/firebase";
+import { isMailConfigured, sendMail } from "@/lib/mail";
 
 /**
  * Enquiry capture. Replaces the legacy PHP mail handler.
@@ -111,7 +114,7 @@ export async function POST(request: Request): Promise<NextResponse<EnquiryRespon
   }
 
   try {
-    await db.collection("enquiries").add({
+    const docRef = await db.collection("enquiries").add({
       ...parsed.data,
       course,
       source: "website",
@@ -119,6 +122,46 @@ export async function POST(request: Request): Promise<NextResponse<EnquiryRespon
       userAgent: request.headers.get("user-agent") ?? null,
       createdAt: FieldValue.serverTimestamp(),
     });
+
+    // Attempt email notification — awaited so errors show in terminal logs.
+    const mailConfigured = isMailConfigured();
+    console.info("[enquiry] mail configured?", mailConfigured, {
+      smtpUser: process.env.SMTP_USER ? "set" : "missing",
+      smtpPass: process.env.SMTP_PASS ? "set" : "missing",
+    });
+
+    if (mailConfigured) {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+      const recipient =
+        process.env.NOTIFICATION_EMAIL ||
+        process.env.SMTP_USER ||
+        contact.email;
+
+      console.info("[enquiry] sending notification to:", recipient);
+
+      const template = enquiryNotificationTemplate({
+        id: docRef.id,
+        name: parsed.data.name,
+        email: parsed.data.email,
+        phone: parsed.data.phone,
+        course,
+        message: parsed.data.message,
+        dashboardUrl: `${siteUrl}/admin/enquiries/${docRef.id}`,
+      });
+
+      try {
+        const result = await sendMail({
+          to: recipient,
+          subject: template.subject,
+          body: template.text,
+          html: template.html,
+          replyTo: parsed.data.email,
+        });
+        console.info("[enquiry] notification email result:", result);
+      } catch (err) {
+        console.error("[enquiry] notification email threw:", err);
+      }
+    }
 
     return NextResponse.json({ ok: true, queued: true });
   } catch (error) {

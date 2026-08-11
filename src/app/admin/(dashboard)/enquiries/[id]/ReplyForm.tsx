@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useId, useRef } from "react";
+import { useActionState, useEffect, useId, useRef, useState } from "react";
 
 import {
   addReplyAction,
@@ -18,31 +18,34 @@ import { cn } from "@/lib/cn";
 const initial: ActionState = {};
 
 const CHANNEL_HINTS: Record<ReplyChannel, string> = {
-  note: "Only visible here. Nothing is sent.",
-  call: "Log what was discussed after calling.",
-  whatsapp: "Log what you sent on WhatsApp.",
-  email: "Sending is not wired up yet — this records the reply.",
+  email: "Sends an email directly to the student.",
+  whatsapp: "Log what was sent on WhatsApp.",
+  call: "Log what was discussed on phone.",
+  note: "Internal note only — nothing sent.",
 };
 
 export function ReplyForm({ id }: { id: string }) {
   const uid = useId();
   const [state, formAction] = useActionState(addReplyAction, initial);
+  const [selectedChannel, setSelectedChannel] = useState<ReplyChannel>("email");
   const formRef = useRef<HTMLFormElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
 
-  // Clear the composer once the entry is saved, and put the caret back for the
-  // next one. On failure, keep what was typed and focus it.
+  // Clear composer on success
   useEffect(() => {
     if (state.success) formRef.current?.reset();
     if (state.error) bodyRef.current?.focus();
   }, [state.error, state.success]);
 
+  const bodyHint =
+    selectedChannel === "email"
+      ? "This message will be emailed to the student and saved in the enquiry history."
+      : "Logged internally for the academy team.";
+
   return (
     <form ref={formRef} action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="id" value={id} />
 
-      {/* Success only. Errors render against the field they belong to, so they
-          are announced with the control rather than in two places at once. */}
       {state.success ? (
         <FormMessage tone="success">{state.success}</FormMessage>
       ) : null}
@@ -51,8 +54,9 @@ export function ReplyForm({ id }: { id: string }) {
         <select
           id={`${uid}-channel`}
           name="channel"
-          defaultValue="note"
-          className={cn(inputClass(), "appearance-none pr-9 sm:max-w-xs")}
+          value={selectedChannel}
+          onChange={(e) => setSelectedChannel(e.target.value as ReplyChannel)}
+          className={cn(inputClass(), "appearance-none pr-9 sm:max-w-md")}
         >
           {REPLY_CHANNELS.map((channel) => (
             <option key={channel} value={channel}>
@@ -64,9 +68,9 @@ export function ReplyForm({ id }: { id: string }) {
 
       <Field
         id={`${uid}-body`}
-        label="What happened"
+        label={selectedChannel === "email" ? "Email Message" : "Details / Notes"}
         error={state.error}
-        hint="Anything logged here stays internal."
+        hint={bodyHint}
       >
         <textarea
           ref={bodyRef}
@@ -78,12 +82,23 @@ export function ReplyForm({ id }: { id: string }) {
           aria-invalid={Boolean(state.error)}
           aria-describedby={`${uid}-body-hint${state.error ? ` ${uid}-body-error` : ""}`}
           className={cn(inputClass(Boolean(state.error)), "min-h-28 resize-y py-3")}
-          placeholder="Called and explained the SQL batch timings. Following up on Monday."
+          placeholder={
+            selectedChannel === "email"
+              ? "Hello, thank you for reaching out to SSS Academy! Regarding the SQL batch timings..."
+              : "Called student and explained course details. Scheduled follow-up."
+          }
         />
       </Field>
 
-      <div className="flex justify-end">
-        <SubmitButton pendingLabel="Saving…">Add to thread</SubmitButton>
+      <div className="flex items-center justify-between border-t border-ink-100 pt-3">
+        <p className="text-xs text-ink-500">
+          {selectedChannel === "email"
+            ? "📬 Delivered via SMTP"
+            : "📝 Saved to internal log"}
+        </p>
+        <SubmitButton pendingLabel={selectedChannel === "email" ? "Sending email…" : "Saving…"}>
+          {selectedChannel === "email" ? "Send Email Reply" : "Add to Thread"}
+        </SubmitButton>
       </div>
     </form>
   );
