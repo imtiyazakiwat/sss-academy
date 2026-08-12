@@ -4,10 +4,11 @@ import { JsonLd } from "@/components/JsonLd";
 import { Reveal } from "@/components/motion/Reveal";
 import { ContactHero } from "@/components/site/ContactHero";
 import { EnquiryForm } from "@/components/site/EnquiryForm";
+import { Faq } from "@/components/site/Faq";
 import { Container, Eyebrow, Section } from "@/components/ui/Section";
 import { contact, socials } from "@/content/site";
 import { findCourse, getCourses } from "@/lib/cms/courses";
-import { breadcrumbSchema } from "@/lib/schema";
+import { breadcrumbSchema, faqSchema } from "@/lib/schema";
 
 /* ─── Icons ─── */
 const PhoneIcon = () => (
@@ -185,7 +186,10 @@ export default async function ContactPage({
         </Container>
       </Section>
 
+      <Faq />
+
       <JsonLd data={breadcrumbSchema([{ name: "Contact", href: "/contact" }])} />
+      <JsonLd data={faqSchema} />
     </>
   );
 }
